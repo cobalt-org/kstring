@@ -1,5 +1,0 @@
-{{foo | replace:'foo', 'bar' | upcase}}
-{{ "hello" | downcase | upcase}}
-{{ "HELLO" | downcase | upcase}}
-{% assign test = "xample" | upcase | prepend:'E' %}
-{{test}}

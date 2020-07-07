@@ -1,53 +1,27 @@
-//! The Liquid templating language for Rust
+//! Key String: Optimized for map keys.
 //!
-//! __http://liquidmarkup.org/__
+//! # Background
 //!
-//! ```toml
-//! [dependencies]
-//! liquid = "0.20"
-//! ```
+//! Considerations:
+//! - Large maps
+//! - Most keys live and drop without being used in any other way
+//! - Most keys are relatively small (single to double digit bytes)
+//! - Keys are immutable
+//! - Allow zero-cost abstractions between structs and maps (e.g. no allocating
+//!   when dealing with struct field names)
 //!
-//! ## Example
-//! ```rust
-//! let template = liquid::ParserBuilder::with_stdlib()
-//!     .build().unwrap()
-//!     .parse("Liquid! {{num | minus: 2}}").unwrap();
-//!
-//! let mut globals = liquid::object!({
-//!     "num": 4f64
-//! });
-//!
-//! let output = template.render(&globals).unwrap();
-//! assert_eq!(output, "Liquid! 2".to_string());
-//! ```
+//! Ramifications:
+//! - Inline small strings rather than going to the heap.
+//! - Preserve `&'static str` across strings (`KString`),
+//!   references (`KStringRef`), and lifetime abstractions (`KStringCow`) to avoid
+//!   allocating for struct field names.
+//! - Use `Box<str>` rather than `String` to use less memory.
 
-mod parser;
-mod template;
+mod cow;
+mod fixed;
+mod r#ref;
+mod string;
 
-pub mod reflection;
-
-pub use liquid_core::partials;
-/// Liquid data model.
-pub mod model {
-    pub use liquid_core::array;
-    pub use liquid_core::model::*;
-    pub use liquid_core::object;
-    pub use liquid_core::scalar;
-    pub use liquid_core::value;
-}
-
-pub use crate::parser::*;
-pub use crate::template::*;
-pub use liquid_core::object;
-pub use liquid_core::to_object;
-pub use liquid_core::Error;
-pub use liquid_core::Object;
-pub use liquid_core::{ObjectView, ValueView};
-#[doc(hidden)]
-pub use liquid_derive::{ObjectView, ValueView};
-
-#[macro_use]
-extern crate doc_comment;
-doc_comment! {
-    include_str!("../README.md")
-}
+pub use cow::*;
+pub use r#ref::*;
+pub use string::*;
