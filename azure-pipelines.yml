@@ -6,9 +6,7 @@ schedules:
     - master
 variables:
   minrust: 1.37.0
-  # Crashes for some reason. Note: does not run in PRs, so needs to be tested
-  # in `master`.
-  #codecov_token: $(CODECOV_TOKEN_SECRET)
+  codecov_token: $(CODECOV_TOKEN_SECRET)
   windows_vm: vs2017-win2016
   mac_vm: macos-10.14
   linux_vm: ubuntu-16.04
