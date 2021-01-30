@@ -1,8 +1,10 @@
+#![allow(clippy::clone_on_copy, clippy::identity_conversion)]
+
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 
 type StringCow<'s> = std::borrow::Cow<'s, str>;
 
-pub static FIXTURES: &[&'static str] = &[
+pub static FIXTURES: &[&str] = &[
     "",
     "0",
     "01",
