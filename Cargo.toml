@@ -13,6 +13,7 @@ edition = "2018"
 
 [badges]
 azure-devops = { project = "cobalt-org", pipeline = "kstring" }
+maintenance = { status = "passively-maintained" }
 
 [dependencies]
 serde = "1.0"
