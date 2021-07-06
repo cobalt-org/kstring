@@ -54,7 +54,27 @@ impl KString {
     /// Create an owned `KString`.
     #[inline]
     pub fn from_string(other: StdString) -> Self {
-        Self::from_boxed(other.into_boxed_str())
+        let inner = match other.len() {
+            0 => KStringInner::Singleton(""),
+            1 => KStringInner::Fixed1(FixedString1::new(other.as_str())),
+            2 => KStringInner::Fixed2(FixedString2::new(other.as_str())),
+            3 => KStringInner::Fixed3(FixedString3::new(other.as_str())),
+            4 => KStringInner::Fixed4(FixedString4::new(other.as_str())),
+            5 => KStringInner::Fixed5(FixedString5::new(other.as_str())),
+            6 => KStringInner::Fixed6(FixedString6::new(other.as_str())),
+            7 => KStringInner::Fixed7(FixedString7::new(other.as_str())),
+            8 => KStringInner::Fixed8(FixedString8::new(other.as_str())),
+            9 => KStringInner::Fixed9(FixedString9::new(other.as_str())),
+            10 => KStringInner::Fixed10(FixedString10::new(other.as_str())),
+            11 => KStringInner::Fixed11(FixedString11::new(other.as_str())),
+            12 => KStringInner::Fixed12(FixedString12::new(other.as_str())),
+            13 => KStringInner::Fixed13(FixedString13::new(other.as_str())),
+            14 => KStringInner::Fixed14(FixedString14::new(other.as_str())),
+            15 => KStringInner::Fixed15(FixedString15::new(other.as_str())),
+            16 => KStringInner::Fixed16(FixedString16::new(other.as_str())),
+            _ => KStringInner::Owned(other.into_boxed_str()),
+        };
+        Self { inner }
     }
 
     /// Create an owned `KString` optimally from a reference.
@@ -368,8 +388,7 @@ impl<'s> From<&'s KStringCow<'s>> for KString {
 impl From<StdString> for KString {
     #[inline]
     fn from(other: StdString) -> Self {
-        // Since the memory is already allocated, don't bother moving it into a FixedString
-        Self::from_boxed(other.into_boxed_str())
+        Self::from_string(other)
     }
 }
 

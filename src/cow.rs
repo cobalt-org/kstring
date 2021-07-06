@@ -38,7 +38,9 @@ impl<'s> KStringCow<'s> {
     /// Create an owned `KStringCow`.
     #[inline]
     pub fn from_string(other: StdString) -> Self {
-        Self::from_boxed(other.into_boxed_str())
+        Self {
+            inner: KStringCowInner::Owned(KString::from_string(other)),
+        }
     }
 
     /// Create a reference to a borrowed data.
@@ -292,8 +294,7 @@ impl<'s> From<&'s KStringRef<'s>> for KStringCow<'s> {
 impl From<StdString> for KStringCow<'static> {
     #[inline]
     fn from(other: StdString) -> Self {
-        // Since the memory is already allocated, don't bother moving it into a FixedString
-        Self::from_boxed(other.into_boxed_str())
+        Self::from_string(other)
     }
 }
 
