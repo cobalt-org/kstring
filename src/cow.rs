@@ -255,7 +255,7 @@ impl<'s> Default for KStringCow<'s> {
     }
 }
 
-impl From<KString> for KStringCow<'static> {
+impl<'s> From<KString> for KStringCow<'s> {
     #[inline]
     fn from(other: KString) -> Self {
         let inner = KStringCowInner::Owned(other);
@@ -291,7 +291,7 @@ impl<'s> From<&'s KStringRef<'s>> for KStringCow<'s> {
     }
 }
 
-impl From<StdString> for KStringCow<'static> {
+impl<'s> From<StdString> for KStringCow<'s> {
     #[inline]
     fn from(other: StdString) -> Self {
         Self::from_string(other)
@@ -305,7 +305,7 @@ impl<'s> From<&'s StdString> for KStringCow<'s> {
     }
 }
 
-impl From<BoxedStr> for KStringCow<'static> {
+impl<'s> From<BoxedStr> for KStringCow<'s> {
     #[inline]
     fn from(other: BoxedStr) -> Self {
         // Since the memory is already allocated, don't bother moving it into a FixedString
