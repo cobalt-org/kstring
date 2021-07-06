@@ -326,6 +326,7 @@ impl<'s> From<&'s str> for KStringCow<'s> {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'s> serde::Serialize for KStringCow<'s> {
     #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -336,6 +337,7 @@ impl<'s> serde::Serialize for KStringCow<'s> {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de, 's> serde::Deserialize<'de> for KStringCow<'s> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where

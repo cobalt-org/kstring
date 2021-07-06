@@ -395,6 +395,7 @@ impl From<&'static str> for KString {
     }
 }
 
+#[cfg(feature = "serde")]
 impl serde::Serialize for KString {
     #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -405,6 +406,7 @@ impl serde::Serialize for KString {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de> serde::Deserialize<'de> for KString {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -414,8 +416,10 @@ impl<'de> serde::Deserialize<'de> for KString {
     }
 }
 
+#[cfg(feature = "serde")]
 struct StringVisitor;
 
+#[cfg(feature = "serde")]
 impl<'de> serde::de::Visitor<'de> for StringVisitor {
     type Value = KString;
 
