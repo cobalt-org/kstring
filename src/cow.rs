@@ -16,8 +16,8 @@ pub struct KStringCow<'s> {
 
 #[derive(Clone, Debug)]
 pub(crate) enum KStringCowInner<'s> {
-    Owned(KString),
     Borrowed(&'s str),
+    Owned(KString),
 }
 
 impl<'s> KStringCow<'s> {
@@ -98,32 +98,32 @@ impl<'s> KStringCowInner<'s> {
     #[inline]
     fn as_ref(&self) -> KStringRef<'_> {
         match self {
-            Self::Owned(ref s) => s.as_ref(),
             Self::Borrowed(ref s) => KStringRef::from_ref(s),
+            Self::Owned(ref s) => s.as_ref(),
         }
     }
 
     #[inline]
     fn into_owned(self) -> KString {
         match self {
-            Self::Owned(s) => s,
             Self::Borrowed(s) => KString::from_ref(s),
+            Self::Owned(s) => s,
         }
     }
 
     #[inline]
     fn as_str(&self) -> &str {
         match self {
-            Self::Owned(ref s) => s.as_str(),
             Self::Borrowed(ref s) => s,
+            Self::Owned(ref s) => s.as_str(),
         }
     }
 
     #[inline]
     fn into_boxed_str(self) -> BoxedStr {
         match self {
-            Self::Owned(s) => s.into_boxed_str(),
             Self::Borrowed(s) => BoxedStr::from(s),
+            Self::Owned(s) => s.into_boxed_str(),
         }
     }
 
@@ -131,8 +131,8 @@ impl<'s> KStringCowInner<'s> {
     #[inline]
     fn into_cow_str(self) -> Cow<'s, str> {
         match self {
-            Self::Owned(s) => s.into_cow_str(),
             Self::Borrowed(s) => Cow::Borrowed(s),
+            Self::Owned(s) => s.into_cow_str(),
         }
     }
 }

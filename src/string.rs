@@ -16,7 +16,6 @@ pub struct KString {
 
 #[derive(Clone, Debug)]
 pub(crate) enum KStringInner {
-    Owned(BoxedStr),
     Singleton(&'static str),
     Fixed1(FixedString1),
     Fixed2(FixedString2),
@@ -34,6 +33,7 @@ pub(crate) enum KStringInner {
     Fixed14(FixedString14),
     Fixed15(FixedString15),
     Fixed16(FixedString16),
+    Owned(BoxedStr),
 }
 
 impl KString {
@@ -126,7 +126,6 @@ impl KStringInner {
     #[inline]
     fn as_ref(&self) -> KStringRef<'_> {
         match self {
-            Self::Owned(ref s) => KStringRef::from_ref(s),
             Self::Singleton(ref s) => KStringRef::from_static(s),
             Self::Fixed1(ref s) => KStringRef::from_ref(s.as_str()),
             Self::Fixed2(ref s) => KStringRef::from_ref(s.as_str()),
@@ -144,13 +143,13 @@ impl KStringInner {
             Self::Fixed14(ref s) => KStringRef::from_ref(s.as_str()),
             Self::Fixed15(ref s) => KStringRef::from_ref(s.as_str()),
             Self::Fixed16(ref s) => KStringRef::from_ref(s.as_str()),
+            Self::Owned(ref s) => KStringRef::from_ref(s),
         }
     }
 
     #[inline]
     fn as_str(&self) -> &str {
         match self {
-            Self::Owned(ref s) => &s,
             Self::Singleton(ref s) => s,
             Self::Fixed1(ref s) => s.as_str(),
             Self::Fixed2(ref s) => s.as_str(),
@@ -168,13 +167,13 @@ impl KStringInner {
             Self::Fixed14(ref s) => s.as_str(),
             Self::Fixed15(ref s) => s.as_str(),
             Self::Fixed16(ref s) => s.as_str(),
+            Self::Owned(ref s) => &s,
         }
     }
 
     #[inline]
     fn into_boxed_str(self) -> BoxedStr {
         match self {
-            Self::Owned(s) => s,
             Self::Singleton(s) => BoxedStr::from(s),
             Self::Fixed1(s) => s.to_boxed_str(),
             Self::Fixed2(s) => s.to_boxed_str(),
@@ -192,6 +191,7 @@ impl KStringInner {
             Self::Fixed14(s) => s.to_boxed_str(),
             Self::Fixed15(s) => s.to_boxed_str(),
             Self::Fixed16(s) => s.to_boxed_str(),
+            Self::Owned(s) => s,
         }
     }
 
@@ -199,7 +199,6 @@ impl KStringInner {
     #[inline]
     fn into_cow_str(self) -> Cow<'static, str> {
         match self {
-            Self::Owned(s) => Cow::Owned(s.into()),
             Self::Singleton(s) => Cow::Borrowed(s),
             Self::Fixed1(s) => Cow::Owned(s.to_boxed_str().into()),
             Self::Fixed2(s) => Cow::Owned(s.to_boxed_str().into()),
@@ -217,6 +216,7 @@ impl KStringInner {
             Self::Fixed14(s) => Cow::Owned(s.to_boxed_str().into()),
             Self::Fixed15(s) => Cow::Owned(s.to_boxed_str().into()),
             Self::Fixed16(s) => Cow::Owned(s.to_boxed_str().into()),
+            Self::Owned(s) => Cow::Owned(s.into()),
         }
     }
 }
