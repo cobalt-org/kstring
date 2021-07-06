@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.2] - 2021-07-06
+
 #### Features
 
 - `serde` support is now optional (still on by default)
@@ -21,5 +23,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.0.0] - 2020-07-07
 
 <!-- next-url -->
-[Unreleased]: https://github.com/assert-rs/predicates-rs/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/assert-rs/predicates-rs/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/assert-rs/predicates-rs/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/assert-rs/predicates-rs/compare/v1.0.0...v1.0.1
