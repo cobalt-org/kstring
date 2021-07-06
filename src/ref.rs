@@ -44,6 +44,7 @@ impl<'s> KStringRef<'s> {
 
     /// Clone the data into an owned-type.
     #[inline]
+    #[allow(clippy::wrong_self_convention)]
     pub fn to_owned(&self) -> KString {
         self.inner.to_owned()
     }
@@ -63,6 +64,7 @@ impl<'s> KStringRef<'s> {
 
 impl<'s> KStringRefInner<'s> {
     #[inline]
+    #[allow(clippy::wrong_self_convention)]
     fn to_owned(&self) -> KString {
         match self {
             Self::Borrowed(s) => KString::from_ref(s),
@@ -235,6 +237,7 @@ impl<'s> From<&'s str> for KStringRef<'s> {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'s> serde::Serialize for KStringRef<'s> {
     #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -245,6 +248,7 @@ impl<'s> serde::Serialize for KStringRef<'s> {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de: 's, 's> serde::Deserialize<'de> for KStringRef<'s> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where

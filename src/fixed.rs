@@ -9,7 +9,7 @@ macro_rules! fixed_string {
 
         impl $name {
             pub(crate) fn new(s: &str) -> Self {
-                assert_eq!(s.as_bytes().len(), $len);
+                debug_assert_eq!(s.as_bytes().len(), $len);
                 let mut array = [0; $len];
                 array.copy_from_slice(&s.as_bytes()[0..$len]);
                 Self { array }

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+- `serde` support is now optional (still on by default)
+
 ## [1.0.1] - 2021-01-29
 
 

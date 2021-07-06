@@ -16,8 +16,8 @@ pub struct KStringCow<'s> {
 
 #[derive(Clone, Debug)]
 pub(crate) enum KStringCowInner<'s> {
-    Owned(KString),
     Borrowed(&'s str),
+    Owned(KString),
 }
 
 impl<'s> KStringCow<'s> {
@@ -38,7 +38,9 @@ impl<'s> KStringCow<'s> {
     /// Create an owned `KStringCow`.
     #[inline]
     pub fn from_string(other: StdString) -> Self {
-        Self::from_boxed(other.into_boxed_str())
+        Self {
+            inner: KStringCowInner::Owned(KString::from_string(other)),
+        }
     }
 
     /// Create a reference to a borrowed data.
@@ -98,32 +100,32 @@ impl<'s> KStringCowInner<'s> {
     #[inline]
     fn as_ref(&self) -> KStringRef<'_> {
         match self {
-            Self::Owned(ref s) => s.as_ref(),
             Self::Borrowed(ref s) => KStringRef::from_ref(s),
+            Self::Owned(ref s) => s.as_ref(),
         }
     }
 
     #[inline]
     fn into_owned(self) -> KString {
         match self {
-            Self::Owned(s) => s,
             Self::Borrowed(s) => KString::from_ref(s),
+            Self::Owned(s) => s,
         }
     }
 
     #[inline]
     fn as_str(&self) -> &str {
         match self {
-            Self::Owned(ref s) => s.as_str(),
             Self::Borrowed(ref s) => s,
+            Self::Owned(ref s) => s.as_str(),
         }
     }
 
     #[inline]
     fn into_boxed_str(self) -> BoxedStr {
         match self {
-            Self::Owned(s) => s.into_boxed_str(),
             Self::Borrowed(s) => BoxedStr::from(s),
+            Self::Owned(s) => s.into_boxed_str(),
         }
     }
 
@@ -131,8 +133,8 @@ impl<'s> KStringCowInner<'s> {
     #[inline]
     fn into_cow_str(self) -> Cow<'s, str> {
         match self {
-            Self::Owned(s) => s.into_cow_str(),
             Self::Borrowed(s) => Cow::Borrowed(s),
+            Self::Owned(s) => s.into_cow_str(),
         }
     }
 }
@@ -253,7 +255,7 @@ impl<'s> Default for KStringCow<'s> {
     }
 }
 
-impl From<KString> for KStringCow<'static> {
+impl<'s> From<KString> for KStringCow<'s> {
     #[inline]
     fn from(other: KString) -> Self {
         let inner = KStringCowInner::Owned(other);
@@ -289,11 +291,10 @@ impl<'s> From<&'s KStringRef<'s>> for KStringCow<'s> {
     }
 }
 
-impl From<StdString> for KStringCow<'static> {
+impl<'s> From<StdString> for KStringCow<'s> {
     #[inline]
     fn from(other: StdString) -> Self {
-        // Since the memory is already allocated, don't bother moving it into a FixedString
-        Self::from_boxed(other.into_boxed_str())
+        Self::from_string(other)
     }
 }
 
@@ -304,7 +305,7 @@ impl<'s> From<&'s StdString> for KStringCow<'s> {
     }
 }
 
-impl From<BoxedStr> for KStringCow<'static> {
+impl<'s> From<BoxedStr> for KStringCow<'s> {
     #[inline]
     fn from(other: BoxedStr) -> Self {
         // Since the memory is already allocated, don't bother moving it into a FixedString
@@ -326,6 +327,7 @@ impl<'s> From<&'s str> for KStringCow<'s> {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'s> serde::Serialize for KStringCow<'s> {
     #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -336,6 +338,7 @@ impl<'s> serde::Serialize for KStringCow<'s> {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de, 's> serde::Deserialize<'de> for KStringCow<'s> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
