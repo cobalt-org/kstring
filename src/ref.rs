@@ -44,6 +44,7 @@ impl<'s> KStringRef<'s> {
 
     /// Clone the data into an owned-type.
     #[inline]
+    #[allow(clippy::wrong_self_convention)]
     pub fn to_owned(&self) -> KString {
         self.inner.to_owned()
     }
@@ -63,6 +64,7 @@ impl<'s> KStringRef<'s> {
 
 impl<'s> KStringRefInner<'s> {
     #[inline]
+    #[allow(clippy::wrong_self_convention)]
     fn to_owned(&self) -> KString {
         match self {
             Self::Borrowed(s) => KString::from_ref(s),
