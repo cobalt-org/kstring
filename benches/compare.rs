@@ -137,6 +137,109 @@ fn bench_clone_owned(c: &mut Criterion) {
     group.finish();
 }
 
+// Note: this is meant to measure the overhead for accessing the underlying str.  We shouldn't try
+// to optimize *just* the case being measured here.
+fn bench_access(c: &mut Criterion) {
+    let mut group = c.benchmark_group("access");
+    for fixture in FIXTURES {
+        let len = fixture.len();
+        group.throughput(Throughput::Bytes(len as u64));
+        group.bench_with_input(BenchmarkId::new("str", len), &len, |b, _| {
+            let uut = *fixture;
+            let uut = criterion::black_box(uut);
+            b.iter(|| uut.is_empty())
+        });
+        group.bench_with_input(BenchmarkId::new("String", len), &len, |b, _| {
+            let uut = String::from(*fixture);
+            let uut = criterion::black_box(uut);
+            b.iter(|| uut.is_empty())
+        });
+        group.bench_with_input(
+            BenchmarkId::new("StringCow::Borrowed", len),
+            &len,
+            |b, _| {
+                let uut = StringCow::Borrowed(*fixture);
+                let uut = criterion::black_box(uut);
+                b.iter(|| uut.is_empty())
+            },
+        );
+        group.bench_with_input(BenchmarkId::new("StringCow::Owned", len), &len, |b, _| {
+            let uut = StringCow::Owned(String::from(*fixture));
+            let uut = criterion::black_box(uut);
+            b.iter(|| uut.is_empty())
+        });
+        group.bench_with_input(
+            BenchmarkId::new("KString::from_static", len),
+            &len,
+            |b, _| {
+                let uut = kstring::KString::from_static(*fixture);
+                let uut = criterion::black_box(uut);
+                b.iter(|| uut.is_empty())
+            },
+        );
+        group.bench_with_input(BenchmarkId::new("KString::from_ref", len), &len, |b, _| {
+            let uut = kstring::KString::from_ref(*fixture);
+            let uut = criterion::black_box(uut);
+            b.iter(|| uut.is_empty())
+        });
+        group.bench_with_input(
+            BenchmarkId::new("KString::from_string", len),
+            &len,
+            |b, _| {
+                let uut = kstring::KString::from_string(String::from(*fixture));
+                let uut = criterion::black_box(uut);
+                b.iter(|| uut.is_empty())
+            },
+        );
+        group.bench_with_input(
+            BenchmarkId::new("KStringCow::from_static", len),
+            &len,
+            |b, _| {
+                let uut = kstring::KStringCow::from_static(*fixture);
+                let uut = criterion::black_box(uut);
+                b.iter(|| uut.is_empty())
+            },
+        );
+        group.bench_with_input(
+            BenchmarkId::new("KStringCow::from_ref", len),
+            &len,
+            |b, _| {
+                let uut = kstring::KStringCow::from_ref(*fixture);
+                let uut = criterion::black_box(uut);
+                b.iter(|| uut.is_empty())
+            },
+        );
+        group.bench_with_input(
+            BenchmarkId::new("KStringCow::from_string", len),
+            &len,
+            |b, _| {
+                let uut = kstring::KStringCow::from_string(String::from(*fixture));
+                let uut = criterion::black_box(uut);
+                b.iter(|| uut.is_empty())
+            },
+        );
+        group.bench_with_input(
+            BenchmarkId::new("KStringRef::from_static", len),
+            &len,
+            |b, _| {
+                let uut = kstring::KStringRef::from_static(*fixture);
+                let uut = criterion::black_box(uut);
+                b.iter(|| uut.is_empty())
+            },
+        );
+        group.bench_with_input(
+            BenchmarkId::new("KStringRef::from_ref", len),
+            &len,
+            |b, _| {
+                let uut = kstring::KStringRef::from_ref(*fixture);
+                let uut = criterion::black_box(uut);
+                b.iter(|| uut.is_empty())
+            },
+        );
+    }
+    group.finish();
+}
+
 fn bench_eq_static(c: &mut Criterion) {
     let mut group = c.benchmark_group("eq static");
     for fixture in FIXTURES {
@@ -255,6 +358,7 @@ criterion_group!(
     bench_clone_static,
     bench_clone_ref,
     bench_clone_owned,
+    bench_access,
     bench_eq_static,
     bench_eq_ref,
     bench_eq_owned,
