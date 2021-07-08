@@ -35,28 +35,20 @@ fn bench_clone(c: &mut Criterion) {
             let uut = criterion::black_box(uut);
             b.iter(|| uut.clone())
         });
-        group.bench_with_input(BenchmarkId::new("&'a str", len), &len, |b, _| {
-            let fixture = String::from(*fixture);
-            let uut = fixture.as_str();
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.clone())
-        });
         group.bench_with_input(BenchmarkId::new("String", len), &len, |b, _| {
             let uut = String::from(*fixture);
             let uut = criterion::black_box(uut);
             b.iter(|| uut.clone())
         });
-        group.bench_with_input(BenchmarkId::new("StringCow<'static>", len), &len, |b, _| {
-            let uut = StringCow::Borrowed(*fixture);
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.clone())
-        });
-        group.bench_with_input(BenchmarkId::new("StringCow<'a>", len), &len, |b, _| {
-            let fixture = String::from(*fixture);
-            let uut = StringCow::Borrowed(fixture.as_str());
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.clone())
-        });
+        group.bench_with_input(
+            BenchmarkId::new("StringCow::Borrowed", len),
+            &len,
+            |b, _| {
+                let uut = StringCow::Borrowed(*fixture);
+                let uut = criterion::black_box(uut);
+                b.iter(|| uut.clone())
+            },
+        );
         group.bench_with_input(BenchmarkId::new("StringCow::Owned", len), &len, |b, _| {
             let fixture = String::from(*fixture);
             let uut = StringCow::Owned(fixture);
