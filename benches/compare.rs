@@ -37,7 +37,7 @@ fn bench_clone(c: &mut Criterion) {
         });
         group.bench_with_input(BenchmarkId::new("&'a str", len), &len, |b, _| {
             let fixture = String::from(*fixture);
-            let uut = &fixture;
+            let uut = fixture.as_str();
             let uut = criterion::black_box(uut);
             b.iter(|| uut.clone())
         });
@@ -147,7 +147,7 @@ fn bench_access(c: &mut Criterion) {
     for fixture in FIXTURES {
         let len = fixture.len();
         group.throughput(Throughput::Bytes(len as u64));
-        group.bench_with_input(BenchmarkId::new("str", len), &len, |b, _| {
+        group.bench_with_input(BenchmarkId::new("&'static str", len), &len, |b, _| {
             let uut = *fixture;
             let uut = criterion::black_box(uut);
             b.iter(|| uut.is_empty())
