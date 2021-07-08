@@ -8,6 +8,7 @@ macro_rules! fixed_string {
         }
 
         impl $name {
+            #[inline]
             pub(crate) fn new(s: &str) -> Self {
                 debug_assert_eq!(s.as_bytes().len(), $len);
                 let mut array = [0; $len];
