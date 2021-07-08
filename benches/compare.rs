@@ -40,6 +40,11 @@ fn bench_clone(c: &mut Criterion) {
             let uut = criterion::black_box(uut);
             b.iter(|| uut.clone())
         });
+        group.bench_with_input(BenchmarkId::new("Box<str>", len), &len, |b, _| {
+            let uut = Box::<str>::from(*fixture);
+            let uut = criterion::black_box(uut);
+            b.iter(|| uut.clone())
+        });
         group.bench_with_input(
             BenchmarkId::new("StringCow::Borrowed", len),
             &len,
@@ -146,6 +151,11 @@ fn bench_access(c: &mut Criterion) {
         });
         group.bench_with_input(BenchmarkId::new("String", len), &len, |b, _| {
             let uut = String::from(*fixture);
+            let uut = criterion::black_box(uut);
+            b.iter(|| uut.is_empty())
+        });
+        group.bench_with_input(BenchmarkId::new("Box<str>", len), &len, |b, _| {
+            let uut = Box::<str>::from(*fixture);
             let uut = criterion::black_box(uut);
             b.iter(|| uut.is_empty())
         });
