@@ -14,7 +14,7 @@ pub struct KString {
     pub(crate) inner: KStringInner,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub(crate) enum KStringInner {
     Singleton(&'static str),
     Fixed1(FixedString1),
@@ -237,6 +237,39 @@ impl KStringInner {
             Self::Fixed15(s) => Cow::Owned(s.to_boxed_str().into()),
             Self::Fixed16(s) => Cow::Owned(s.to_boxed_str().into()),
             Self::Owned(s) => Cow::Owned(s.into()),
+        }
+    }
+}
+
+// Explicit to avoid inlining which cuts clone times in half.
+//
+// An automatically derived `clone()` has 10ns overhead while the explicit `Deref`/`as_str` has
+// none of that.  Being explicit and removing the `#[inline]` attribute dropped the overhead to
+// 5ns.
+//
+// My only guess is that the `clone()` calls we delegate to are just that much bigger than
+// `as_str()` that, when combined with a jump table, is blowing the icache, slowing things down.
+impl Clone for KStringInner {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Singleton(ref s) => Self::Singleton(s),
+            Self::Fixed1(ref s) => Self::Fixed1(s.clone()),
+            Self::Fixed2(ref s) => Self::Fixed2(s.clone()),
+            Self::Fixed3(ref s) => Self::Fixed3(s.clone()),
+            Self::Fixed4(ref s) => Self::Fixed4(s.clone()),
+            Self::Fixed5(ref s) => Self::Fixed5(s.clone()),
+            Self::Fixed6(ref s) => Self::Fixed6(s.clone()),
+            Self::Fixed7(ref s) => Self::Fixed7(s.clone()),
+            Self::Fixed8(ref s) => Self::Fixed8(s.clone()),
+            Self::Fixed9(ref s) => Self::Fixed9(s.clone()),
+            Self::Fixed10(ref s) => Self::Fixed10(s.clone()),
+            Self::Fixed11(ref s) => Self::Fixed11(s.clone()),
+            Self::Fixed12(ref s) => Self::Fixed12(s.clone()),
+            Self::Fixed13(ref s) => Self::Fixed13(s.clone()),
+            Self::Fixed14(ref s) => Self::Fixed14(s.clone()),
+            Self::Fixed15(ref s) => Self::Fixed15(s.clone()),
+            Self::Fixed16(ref s) => Self::Fixed16(s.clone()),
+            Self::Owned(ref s) => Self::Owned(s.clone()),
         }
     }
 }
