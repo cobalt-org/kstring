@@ -8,22 +8,7 @@ use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Through
 
 type StringCow<'s> = std::borrow::Cow<'s, str>;
 
-pub static FIXTURES: &[&str] = &[
-    "",
-    "0",
-    "01",
-    "012",
-    "0123",
-    "01234",
-    "012345",
-    "0123456",
-    "01234567",
-    "012345678",
-    "0123456789",
-    "01234567890123456789",
-    "0123456789012345678901234567890123456789",
-    "01234567890123456789012345678901234567890123456789012345678901234567890123456789",
-];
+pub static FIXTURES: &[&str] = &["0123456789", "0123456789012345678901234567890123456789"];
 
 fn bench_clone(c: &mut Criterion) {
     let mut group = c.benchmark_group("clone");
@@ -81,54 +66,6 @@ fn bench_clone(c: &mut Criterion) {
             |b, _| {
                 let fixture = String::from(*fixture);
                 let uut = kstring::KString::from_string(fixture);
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.clone())
-            },
-        );
-        group.bench_with_input(
-            BenchmarkId::new("KStringCow::from_static", len),
-            &len,
-            |b, _| {
-                let uut = kstring::KStringCow::from_static(*fixture);
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.clone())
-            },
-        );
-        group.bench_with_input(
-            BenchmarkId::new("KStringCow::from_ref", len),
-            &len,
-            |b, _| {
-                let fixture = String::from(*fixture);
-                let uut = kstring::KStringCow::from_ref(&fixture);
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.clone())
-            },
-        );
-        group.bench_with_input(
-            BenchmarkId::new("KStringCow::from_string", len),
-            &len,
-            |b, _| {
-                let fixture = String::from(*fixture);
-                let uut = kstring::KStringCow::from_string(fixture);
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.clone())
-            },
-        );
-        group.bench_with_input(
-            BenchmarkId::new("KStringRef::from_static", len),
-            &len,
-            |b, _| {
-                let uut = kstring::KStringRef::from_static(*fixture);
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.clone())
-            },
-        );
-        group.bench_with_input(
-            BenchmarkId::new("KStringRef::from_ref", len),
-            &len,
-            |b, _| {
-                let fixture = String::from(*fixture);
-                let uut = kstring::KStringRef::from_ref(&fixture);
                 let uut = criterion::black_box(uut);
                 b.iter(|| uut.clone())
             },
@@ -192,51 +129,6 @@ fn bench_access(c: &mut Criterion) {
             &len,
             |b, _| {
                 let uut = kstring::KString::from_string(String::from(*fixture));
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.is_empty())
-            },
-        );
-        group.bench_with_input(
-            BenchmarkId::new("KStringCow::from_static", len),
-            &len,
-            |b, _| {
-                let uut = kstring::KStringCow::from_static(*fixture);
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.is_empty())
-            },
-        );
-        group.bench_with_input(
-            BenchmarkId::new("KStringCow::from_ref", len),
-            &len,
-            |b, _| {
-                let uut = kstring::KStringCow::from_ref(*fixture);
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.is_empty())
-            },
-        );
-        group.bench_with_input(
-            BenchmarkId::new("KStringCow::from_string", len),
-            &len,
-            |b, _| {
-                let uut = kstring::KStringCow::from_string(String::from(*fixture));
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.is_empty())
-            },
-        );
-        group.bench_with_input(
-            BenchmarkId::new("KStringRef::from_static", len),
-            &len,
-            |b, _| {
-                let uut = kstring::KStringRef::from_static(*fixture);
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.is_empty())
-            },
-        );
-        group.bench_with_input(
-            BenchmarkId::new("KStringRef::from_ref", len),
-            &len,
-            |b, _| {
-                let uut = kstring::KStringRef::from_ref(*fixture);
                 let uut = criterion::black_box(uut);
                 b.iter(|| uut.is_empty())
             },
