@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+#### Features
+
+- Add missing `impl From<&String> for KString`
+
 ## [1.0.3] - 2021-07-08
 
 #### Performance

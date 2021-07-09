@@ -425,10 +425,16 @@ impl From<StdString> for KString {
     }
 }
 
+impl<'s> From<&'s StdString> for KString {
+    #[inline]
+    fn from(other: &'s StdString) -> Self {
+        Self::from_ref(other)
+    }
+}
+
 impl From<BoxedStr> for KString {
     #[inline]
     fn from(other: BoxedStr) -> Self {
-        // Since the memory is already allocated, don't bother moving it into a FixedString
         Self::from_boxed(other)
     }
 }
