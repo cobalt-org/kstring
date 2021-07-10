@@ -1,11 +1,12 @@
 use std::{borrow::Cow, fmt};
 
-use crate::fixed::*;
+use crate::inline::*;
 use crate::KStringCow;
 use crate::KStringRef;
 
 type StdString = std::string::String;
 type BoxedStr = Box<str>;
+pub(crate) type OwnedStr = BoxedStr;
 
 /// A UTF-8 encoded, immutable string.
 #[derive(Clone)]
@@ -17,23 +18,8 @@ pub struct KString {
 #[derive(Debug)]
 pub(crate) enum KStringInner {
     Singleton(&'static str),
-    Fixed1(FixedString1),
-    Fixed2(FixedString2),
-    Fixed3(FixedString3),
-    Fixed4(FixedString4),
-    Fixed5(FixedString5),
-    Fixed6(FixedString6),
-    Fixed7(FixedString7),
-    Fixed8(FixedString8),
-    Fixed9(FixedString9),
-    Fixed10(FixedString10),
-    Fixed11(FixedString11),
-    Fixed12(FixedString12),
-    Fixed13(FixedString13),
-    Fixed14(FixedString14),
-    Fixed15(FixedString15),
-    Fixed16(FixedString16),
-    Owned(BoxedStr),
+    Inline(InlineString),
+    Owned(OwnedStr),
 }
 
 impl KString {
@@ -54,25 +40,10 @@ impl KString {
     /// Create an owned `KString`.
     #[inline]
     pub fn from_string(other: StdString) -> Self {
-        let inner = match other.len() {
-            0 => KStringInner::Singleton(""),
-            1 => KStringInner::Fixed1(FixedString1::new(other.as_str())),
-            2 => KStringInner::Fixed2(FixedString2::new(other.as_str())),
-            3 => KStringInner::Fixed3(FixedString3::new(other.as_str())),
-            4 => KStringInner::Fixed4(FixedString4::new(other.as_str())),
-            5 => KStringInner::Fixed5(FixedString5::new(other.as_str())),
-            6 => KStringInner::Fixed6(FixedString6::new(other.as_str())),
-            7 => KStringInner::Fixed7(FixedString7::new(other.as_str())),
-            8 => KStringInner::Fixed8(FixedString8::new(other.as_str())),
-            9 => KStringInner::Fixed9(FixedString9::new(other.as_str())),
-            10 => KStringInner::Fixed10(FixedString10::new(other.as_str())),
-            11 => KStringInner::Fixed11(FixedString11::new(other.as_str())),
-            12 => KStringInner::Fixed12(FixedString12::new(other.as_str())),
-            13 => KStringInner::Fixed13(FixedString13::new(other.as_str())),
-            14 => KStringInner::Fixed14(FixedString14::new(other.as_str())),
-            15 => KStringInner::Fixed15(FixedString15::new(other.as_str())),
-            16 => KStringInner::Fixed16(FixedString16::new(other.as_str())),
-            _ => KStringInner::Owned(other.into_boxed_str()),
+        let inner = if (0..=CAPACITY).contains(&other.len()) {
+            KStringInner::Inline(InlineString::new(other.as_str()))
+        } else {
+            KStringInner::Owned(other.into_boxed_str())
         };
         Self { inner }
     }
@@ -80,25 +51,10 @@ impl KString {
     /// Create an owned `KString` optimally from a reference.
     #[inline]
     pub fn from_ref(other: &str) -> Self {
-        let inner = match other.len() {
-            0 => KStringInner::Singleton(""),
-            1 => KStringInner::Fixed1(FixedString1::new(other)),
-            2 => KStringInner::Fixed2(FixedString2::new(other)),
-            3 => KStringInner::Fixed3(FixedString3::new(other)),
-            4 => KStringInner::Fixed4(FixedString4::new(other)),
-            5 => KStringInner::Fixed5(FixedString5::new(other)),
-            6 => KStringInner::Fixed6(FixedString6::new(other)),
-            7 => KStringInner::Fixed7(FixedString7::new(other)),
-            8 => KStringInner::Fixed8(FixedString8::new(other)),
-            9 => KStringInner::Fixed9(FixedString9::new(other)),
-            10 => KStringInner::Fixed10(FixedString10::new(other)),
-            11 => KStringInner::Fixed11(FixedString11::new(other)),
-            12 => KStringInner::Fixed12(FixedString12::new(other)),
-            13 => KStringInner::Fixed13(FixedString13::new(other)),
-            14 => KStringInner::Fixed14(FixedString14::new(other)),
-            15 => KStringInner::Fixed15(FixedString15::new(other)),
-            16 => KStringInner::Fixed16(FixedString16::new(other)),
-            _ => KStringInner::Owned(BoxedStr::from(other)),
+        let inner = if (0..=CAPACITY).contains(&other.len()) {
+            KStringInner::Inline(InlineString::new(other))
+        } else {
+            KStringInner::Owned(OwnedStr::from(other))
         };
         Self { inner }
     }
@@ -147,22 +103,7 @@ impl KStringInner {
     fn as_ref(&self) -> KStringRef<'_> {
         match self {
             Self::Singleton(s) => KStringRef::from_static(s),
-            Self::Fixed1(s) => KStringRef::from_ref(s.as_str()),
-            Self::Fixed2(s) => KStringRef::from_ref(s.as_str()),
-            Self::Fixed3(s) => KStringRef::from_ref(s.as_str()),
-            Self::Fixed4(s) => KStringRef::from_ref(s.as_str()),
-            Self::Fixed5(s) => KStringRef::from_ref(s.as_str()),
-            Self::Fixed6(s) => KStringRef::from_ref(s.as_str()),
-            Self::Fixed7(s) => KStringRef::from_ref(s.as_str()),
-            Self::Fixed8(s) => KStringRef::from_ref(s.as_str()),
-            Self::Fixed9(s) => KStringRef::from_ref(s.as_str()),
-            Self::Fixed10(s) => KStringRef::from_ref(s.as_str()),
-            Self::Fixed11(s) => KStringRef::from_ref(s.as_str()),
-            Self::Fixed12(s) => KStringRef::from_ref(s.as_str()),
-            Self::Fixed13(s) => KStringRef::from_ref(s.as_str()),
-            Self::Fixed14(s) => KStringRef::from_ref(s.as_str()),
-            Self::Fixed15(s) => KStringRef::from_ref(s.as_str()),
-            Self::Fixed16(s) => KStringRef::from_ref(s.as_str()),
+            Self::Inline(s) => KStringRef::from_ref(s.as_str()),
             Self::Owned(s) => KStringRef::from_ref(s),
         }
     }
@@ -171,22 +112,7 @@ impl KStringInner {
     fn as_str(&self) -> &str {
         match self {
             Self::Singleton(s) => s,
-            Self::Fixed1(s) => s.as_str(),
-            Self::Fixed2(s) => s.as_str(),
-            Self::Fixed3(s) => s.as_str(),
-            Self::Fixed4(s) => s.as_str(),
-            Self::Fixed5(s) => s.as_str(),
-            Self::Fixed6(s) => s.as_str(),
-            Self::Fixed7(s) => s.as_str(),
-            Self::Fixed8(s) => s.as_str(),
-            Self::Fixed9(s) => s.as_str(),
-            Self::Fixed10(s) => s.as_str(),
-            Self::Fixed11(s) => s.as_str(),
-            Self::Fixed12(s) => s.as_str(),
-            Self::Fixed13(s) => s.as_str(),
-            Self::Fixed14(s) => s.as_str(),
-            Self::Fixed15(s) => s.as_str(),
-            Self::Fixed16(s) => s.as_str(),
+            Self::Inline(s) => s.as_str(),
             Self::Owned(s) => &s,
         }
     }
@@ -195,22 +121,7 @@ impl KStringInner {
     fn into_boxed_str(self) -> BoxedStr {
         match self {
             Self::Singleton(s) => BoxedStr::from(s),
-            Self::Fixed1(s) => s.to_boxed_str(),
-            Self::Fixed2(s) => s.to_boxed_str(),
-            Self::Fixed3(s) => s.to_boxed_str(),
-            Self::Fixed4(s) => s.to_boxed_str(),
-            Self::Fixed5(s) => s.to_boxed_str(),
-            Self::Fixed6(s) => s.to_boxed_str(),
-            Self::Fixed7(s) => s.to_boxed_str(),
-            Self::Fixed8(s) => s.to_boxed_str(),
-            Self::Fixed9(s) => s.to_boxed_str(),
-            Self::Fixed10(s) => s.to_boxed_str(),
-            Self::Fixed11(s) => s.to_boxed_str(),
-            Self::Fixed12(s) => s.to_boxed_str(),
-            Self::Fixed13(s) => s.to_boxed_str(),
-            Self::Fixed14(s) => s.to_boxed_str(),
-            Self::Fixed15(s) => s.to_boxed_str(),
-            Self::Fixed16(s) => s.to_boxed_str(),
+            Self::Inline(s) => s.to_boxed_str(),
             Self::Owned(s) => s,
         }
     }
@@ -220,22 +131,7 @@ impl KStringInner {
     fn into_cow_str(self) -> Cow<'static, str> {
         match self {
             Self::Singleton(s) => Cow::Borrowed(s),
-            Self::Fixed1(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Fixed2(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Fixed3(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Fixed4(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Fixed5(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Fixed6(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Fixed7(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Fixed8(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Fixed9(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Fixed10(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Fixed11(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Fixed12(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Fixed13(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Fixed14(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Fixed15(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Fixed16(s) => Cow::Owned(s.to_boxed_str().into()),
+            Self::Inline(s) => Cow::Owned(s.to_boxed_str().into()),
             Self::Owned(s) => Cow::Owned(s.into()),
         }
     }
@@ -253,22 +149,7 @@ impl Clone for KStringInner {
     fn clone(&self) -> Self {
         match self {
             Self::Singleton(s) => Self::Singleton(s),
-            Self::Fixed1(s) => Self::Fixed1(s.clone()),
-            Self::Fixed2(s) => Self::Fixed2(s.clone()),
-            Self::Fixed3(s) => Self::Fixed3(s.clone()),
-            Self::Fixed4(s) => Self::Fixed4(s.clone()),
-            Self::Fixed5(s) => Self::Fixed5(s.clone()),
-            Self::Fixed6(s) => Self::Fixed6(s.clone()),
-            Self::Fixed7(s) => Self::Fixed7(s.clone()),
-            Self::Fixed8(s) => Self::Fixed8(s.clone()),
-            Self::Fixed9(s) => Self::Fixed9(s.clone()),
-            Self::Fixed10(s) => Self::Fixed10(s.clone()),
-            Self::Fixed11(s) => Self::Fixed11(s.clone()),
-            Self::Fixed12(s) => Self::Fixed12(s.clone()),
-            Self::Fixed13(s) => Self::Fixed13(s.clone()),
-            Self::Fixed14(s) => Self::Fixed14(s.clone()),
-            Self::Fixed15(s) => Self::Fixed15(s.clone()),
-            Self::Fixed16(s) => Self::Fixed16(s.clone()),
+            Self::Inline(s) => Self::Inline(*s),
             Self::Owned(s) => Self::Owned(s.clone()),
         }
     }
