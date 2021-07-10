@@ -75,8 +75,8 @@ impl<'s> KStringRefInner<'s> {
     #[inline]
     fn as_str(&self) -> &str {
         match self {
-            Self::Borrowed(ref s) => s,
-            Self::Singleton(ref s) => s,
+            Self::Borrowed(s) => s,
+            Self::Singleton(s) => s,
         }
     }
 

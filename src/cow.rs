@@ -100,8 +100,8 @@ impl<'s> KStringCowInner<'s> {
     #[inline]
     fn as_ref(&self) -> KStringRef<'_> {
         match self {
-            Self::Borrowed(ref s) => KStringRef::from_ref(s),
-            Self::Owned(ref s) => s.as_ref(),
+            Self::Borrowed(s) => KStringRef::from_ref(s),
+            Self::Owned(s) => s.as_ref(),
         }
     }
 
@@ -116,8 +116,8 @@ impl<'s> KStringCowInner<'s> {
     #[inline]
     fn as_str(&self) -> &str {
         match self {
-            Self::Borrowed(ref s) => s,
-            Self::Owned(ref s) => s.as_str(),
+            Self::Borrowed(s) => s,
+            Self::Owned(s) => s.as_str(),
         }
     }
 
