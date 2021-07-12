@@ -26,5 +26,9 @@ criterion = "0.3"
 smol_str = "0.1.18"
 
 [[bench]]
-name = "compare"
+name = "clone"
+harness = false
+
+[[bench]]
+name = "access"
 harness = false
