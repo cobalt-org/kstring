@@ -1,6 +1,6 @@
 #![allow(
     clippy::clone_on_copy,
-    clippy::identity_conversion,
+    clippy::useless_conversion,
     clippy::clone_double_ref
 )]
 
@@ -57,6 +57,11 @@ fn bench_clone(c: &mut Criterion) {
         group.bench_with_input(BenchmarkId::new("StringCow::Owned", len), &len, |b, _| {
             let fixture = String::from(*fixture);
             let uut = StringCow::Owned(fixture);
+            let uut = criterion::black_box(uut);
+            b.iter(|| uut.clone())
+        });
+        group.bench_with_input(BenchmarkId::new("SmolStr::new", len), &len, |b, _| {
+            let uut = smol_str::SmolStr::new(fixture);
             let uut = criterion::black_box(uut);
             b.iter(|| uut.clone())
         });
@@ -170,6 +175,11 @@ fn bench_access(c: &mut Criterion) {
         );
         group.bench_with_input(BenchmarkId::new("StringCow::Owned", len), &len, |b, _| {
             let uut = StringCow::Owned(String::from(*fixture));
+            let uut = criterion::black_box(uut);
+            b.iter(|| uut.is_empty())
+        });
+        group.bench_with_input(BenchmarkId::new("SmolStr", len), &len, |b, _| {
+            let uut = smol_str::SmolStr::new(fixture);
             let uut = criterion::black_box(uut);
             b.iter(|| uut.is_empty())
         });
