@@ -17,6 +17,7 @@ maintenance = { status = "passively-maintained" }
 
 [features]
 default = ["serde"]
+bench_subset_unstable = []
 
 [dependencies]
 serde = { version = "1.0", optional = true }
@@ -26,5 +27,9 @@ criterion = "0.3"
 smol_str = "0.1.18"
 
 [[bench]]
-name = "compare"
+name = "clone"
+harness = false
+
+[[bench]]
+name = "access"
 harness = false
