@@ -8,6 +8,7 @@ use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Through
 
 type StringCow<'s> = std::borrow::Cow<'s, str>;
 
+#[cfg(not(feature = "bench_subset_unstable"))]
 pub static FIXTURES: &[&str] = &[
     "",
     "0",
@@ -22,6 +23,12 @@ pub static FIXTURES: &[&str] = &[
     "0123456789",
     "01234567890123456789",
     "0123456789012345678901234567890123456789",
+    "01234567890123456789012345678901234567890123456789012345678901234567890123456789",
+];
+
+#[cfg(feature = "bench_subset_unstable")]
+pub static FIXTURES: &[&str] = &[
+    "0123456789",
     "01234567890123456789012345678901234567890123456789012345678901234567890123456789",
 ];
 

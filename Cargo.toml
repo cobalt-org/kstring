@@ -17,6 +17,7 @@ maintenance = { status = "passively-maintained" }
 
 [features]
 default = ["serde"]
+bench_subset_unstable = []
 
 [dependencies]
 serde = { version = "1.0", optional = true }
