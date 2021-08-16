@@ -1,19 +1,27 @@
 [package]
 name = "kstring"
 version = "1.0.4"
-authors = ["Ed Page <eopage@gmail.com>"]
 description = "Key String: optimized for map keys"
-keywords = ["serde", "serialization", "string"]
-categories = ["data-structures", "text-processing"]
+authors = ["Ed Page <eopage@gmail.com>"]
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/cobalt-org/kstring"
 documentation = "https://docs.rs/kstring"
 readme = "README.md"
-license = "MIT OR Apache-2.0"
+categories = ["data-structures", "text-processing"]
+keywords = ["serde", "serialization", "string"]
 edition = "2018"
 
 [badges]
-azure-devops = { project = "cobalt-org", pipeline = "kstring" }
 maintenance = { status = "passively-maintained" }
+
+[package.metadata.release]
+pre-release-replacements = [
+  {file="CHANGELOG.md", search="Unreleased", replace="{{version}}", min=1},
+  {file="CHANGELOG.md", search="\\.\\.\\.HEAD", replace="...{{tag_name}}", exactly=1},
+  {file="CHANGELOG.md", search="ReleaseDate", replace="{{date}}", min=1},
+  {file="CHANGELOG.md", search="<!-- next-header -->", replace="<!-- next-header -->\n## [Unreleased] - ReleaseDate\n", exactly=1},
+  {file="CHANGELOG.md", search="<!-- next-url -->", replace="<!-- next-url -->\n[Unreleased]: https://github.com/cobalt-org/kstring/compare/{{tag_name}}...HEAD", exactly=1},
+]
 
 [features]
 default = ["serde"]

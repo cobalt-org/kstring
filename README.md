@@ -3,7 +3,6 @@ KString
 
 > Key String: Optimized for map keys.
 
-[![Build Status](https://dev.azure.com/cobalt-org/cobalt-org/_apis/build/status/kstring?branchName=master)](https://dev.azure.com/cobalt-org/cobalt-org/_build/latest?definitionId=3&branchName=master)
 [![Crates Status](https://img.shields.io/crates/v/kstring.svg)](https://crates.io/crates/kstring)
 
 ## Background
