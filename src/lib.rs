@@ -18,7 +18,7 @@
 //! - Use `Box<str>` rather than `String` to use less memory.
 
 mod cow;
-mod fixed;
+mod inline;
 mod r#ref;
 mod string;
 
