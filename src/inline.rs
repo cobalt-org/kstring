@@ -44,7 +44,12 @@ impl InlineString {
     #[inline]
     pub(crate) fn as_str(&self) -> &str {
         let len = self.len as usize;
-        unsafe { std::str::from_utf8_unchecked(&self.array[..len]) }
+        // SAFETY: Constructors guarantee that `buffer[..len]` is a `str`,
+        // and we don't mutate the data afterwards.
+        unsafe {
+            let slice = self.array.get_unchecked(..len);
+            std::str::from_utf8_unchecked(slice)
+        }
     }
 }
 
