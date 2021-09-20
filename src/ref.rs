@@ -266,7 +266,6 @@ mod test {
 
     #[test]
     fn test_size() {
-        println!("str: {}", std::mem::size_of::<&'static str>());
         println!("KStringRef: {}", std::mem::size_of::<KStringRef<'static>>());
     }
 }

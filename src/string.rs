@@ -4,7 +4,7 @@ use crate::inline::*;
 use crate::KStringCow;
 use crate::KStringRef;
 
-type StdString = std::string::String;
+pub(crate) type StdString = std::string::String;
 type BoxedStr = Box<str>;
 pub(crate) type OwnedStr = BoxedStr;
 
@@ -413,9 +413,6 @@ mod test {
 
     #[test]
     fn test_size() {
-        println!("String: {}", std::mem::size_of::<StdString>());
-        println!("Box<str>: {}", std::mem::size_of::<BoxedStr>());
-        println!("Box<Box<str>>: {}", std::mem::size_of::<Box<BoxedStr>>());
         println!("KString: {}", std::mem::size_of::<KString>());
     }
 }
