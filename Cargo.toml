@@ -25,6 +25,7 @@ maintenance = { status = "passively-maintained" }
 
 [features]
 default = ["serde"]
+arc = []
 max_inline = []
 bench_subset_unstable = []
 
