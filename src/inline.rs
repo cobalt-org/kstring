@@ -44,3 +44,15 @@ impl fmt::Debug for InlineString {
         fmt::Debug::fmt(self.as_str(), f)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_size() {
+        println!("String: {}", std::mem::size_of::<String>());
+        println!("KString: {}", std::mem::size_of::<crate::KString>());
+        println!("InlineString: {}", std::mem::size_of::<InlineString>());
+    }
+}
