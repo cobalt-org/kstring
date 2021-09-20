@@ -4,9 +4,12 @@ use crate::inline::*;
 use crate::KStringCow;
 use crate::KStringRef;
 
-type StdString = std::string::String;
+pub(crate) type StdString = std::string::String;
 type BoxedStr = Box<str>;
-pub(crate) type OwnedStr = BoxedStr;
+#[cfg(feature = "arc")]
+pub(crate) type OwnedStr = std::sync::Arc<str>;
+#[cfg(not(feature = "arc"))]
+pub(crate) type OwnedStr = Box<str>;
 
 /// A UTF-8 encoded, immutable string.
 #[derive(Clone)]
@@ -33,7 +36,7 @@ impl KString {
     #[inline]
     pub fn from_boxed(other: BoxedStr) -> Self {
         Self {
-            inner: KStringInner::Owned(other),
+            inner: KStringInner::Owned(OwnedStr::from(other)),
         }
     }
 
@@ -43,7 +46,7 @@ impl KString {
         let inner = if (0..=CAPACITY).contains(&other.len()) {
             KStringInner::Inline(InlineString::new(other.as_str()))
         } else {
-            KStringInner::Owned(other.into_boxed_str())
+            KStringInner::Owned(OwnedStr::from(other.into_boxed_str()))
         };
         Self { inner }
     }
@@ -122,7 +125,7 @@ impl KStringInner {
         match self {
             Self::Singleton(s) => BoxedStr::from(s),
             Self::Inline(s) => s.to_boxed_str(),
-            Self::Owned(s) => s,
+            Self::Owned(s) => BoxedStr::from(s.as_ref()),
         }
     }
 
@@ -132,7 +135,7 @@ impl KStringInner {
         match self {
             Self::Singleton(s) => Cow::Borrowed(s),
             Self::Inline(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Owned(s) => Cow::Owned(s.into()),
+            Self::Owned(s) => Cow::Owned(s.as_ref().into()),
         }
     }
 }
@@ -413,9 +416,6 @@ mod test {
 
     #[test]
     fn test_size() {
-        println!("String: {}", std::mem::size_of::<StdString>());
-        println!("Box<str>: {}", std::mem::size_of::<BoxedStr>());
-        println!("Box<Box<str>>: {}", std::mem::size_of::<Box<BoxedStr>>());
         println!("KString: {}", std::mem::size_of::<KString>());
     }
 }

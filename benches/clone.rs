@@ -52,6 +52,11 @@ fn bench_clone(c: &mut Criterion) {
             let uut = criterion::black_box(uut);
             b.iter(|| uut.clone())
         });
+        group.bench_with_input(BenchmarkId::new("Arc<str>", len), &len, |b, _| {
+            let uut = std::sync::Arc::<str>::from(*fixture);
+            let uut = criterion::black_box(uut);
+            b.iter(|| uut.clone())
+        });
         group.bench_with_input(
             BenchmarkId::new("StringCow::Borrowed", len),
             &len,

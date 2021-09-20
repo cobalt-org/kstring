@@ -354,10 +354,6 @@ mod test {
 
     #[test]
     fn test_size() {
-        println!(
-            "Cow: {}",
-            std::mem::size_of::<std::borrow::Cow<'static, str>>()
-        );
         println!("KStringCow: {}", std::mem::size_of::<KStringCow<'static>>());
     }
 }
