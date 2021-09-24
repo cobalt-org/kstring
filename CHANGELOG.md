@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+#### Features
+
+- Add `max_inline` feature which is slower for smaller strings but faster for intermediate-length strings
+- Added `arc` feature which is slower for smaller strings but, presumably, faster for large-enough strings
+
+#### Fixes
+
+- Ensure the size of KString matches String on 32-bit systems
+
 ## [1.0.4] - 2021-07-09
 
 #### Features
