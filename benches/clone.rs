@@ -37,11 +37,13 @@ fn bench_clone(c: &mut Criterion) {
     for fixture in FIXTURES {
         let len = fixture.len();
         group.throughput(Throughput::Bytes(len as u64));
+        #[cfg(not(feature = "bench_subset_unstable"))]
         group.bench_with_input(BenchmarkId::new("&'static str", len), &len, |b, _| {
             let uut = *fixture;
             let uut = criterion::black_box(uut);
             b.iter(|| uut.clone())
         });
+        #[cfg(not(feature = "bench_subset_unstable"))]
         group.bench_with_input(BenchmarkId::new("String", len), &len, |b, _| {
             let uut = String::from(*fixture);
             let uut = criterion::black_box(uut);
@@ -52,6 +54,7 @@ fn bench_clone(c: &mut Criterion) {
             let uut = criterion::black_box(uut);
             b.iter(|| uut.clone())
         });
+        #[cfg(not(feature = "bench_subset_unstable"))]
         group.bench_with_input(BenchmarkId::new("Arc<str>", len), &len, |b, _| {
             let uut = std::sync::Arc::<str>::from(*fixture);
             let uut = criterion::black_box(uut);
@@ -72,6 +75,7 @@ fn bench_clone(c: &mut Criterion) {
             let uut = criterion::black_box(uut);
             b.iter(|| uut.clone())
         });
+        #[cfg(not(feature = "bench_subset_unstable"))]
         group.bench_with_input(BenchmarkId::new("SmolStr::new", len), &len, |b, _| {
             let uut = smol_str::SmolStr::new(fixture);
             let uut = criterion::black_box(uut);
@@ -102,6 +106,7 @@ fn bench_clone(c: &mut Criterion) {
                 b.iter(|| uut.clone())
             },
         );
+        #[cfg(not(feature = "bench_subset_unstable"))]
         group.bench_with_input(
             BenchmarkId::new("KStringCow::from_static", len),
             &len,
@@ -111,6 +116,7 @@ fn bench_clone(c: &mut Criterion) {
                 b.iter(|| uut.clone())
             },
         );
+        #[cfg(not(feature = "bench_subset_unstable"))]
         group.bench_with_input(
             BenchmarkId::new("KStringCow::from_ref", len),
             &len,
@@ -121,6 +127,7 @@ fn bench_clone(c: &mut Criterion) {
                 b.iter(|| uut.clone())
             },
         );
+        #[cfg(not(feature = "bench_subset_unstable"))]
         group.bench_with_input(
             BenchmarkId::new("KStringCow::from_string", len),
             &len,
@@ -131,6 +138,7 @@ fn bench_clone(c: &mut Criterion) {
                 b.iter(|| uut.clone())
             },
         );
+        #[cfg(not(feature = "bench_subset_unstable"))]
         group.bench_with_input(
             BenchmarkId::new("KStringRef::from_static", len),
             &len,
@@ -140,6 +148,7 @@ fn bench_clone(c: &mut Criterion) {
                 b.iter(|| uut.clone())
             },
         );
+        #[cfg(not(feature = "bench_subset_unstable"))]
         group.bench_with_input(
             BenchmarkId::new("KStringRef::from_ref", len),
             &len,
