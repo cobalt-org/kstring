@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [1.0.6] - 2021-11-05
+
 #### Features
 
 - Add `FromStr`
@@ -50,7 +52,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.0.0] - 2020-07-07
 
 <!-- next-url -->
-[Unreleased]: https://github.com/cobalt-org/kstring/compare/v1.0.5...HEAD
+[Unreleased]: https://github.com/cobalt-org/kstring/compare/v1.0.6...HEAD
+[1.0.6]: https://github.com/cobalt-org/kstring/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/cobalt-org/kstring/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/cobalt-org/kstring/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/cobalt-org/kstring/compare/v1.0.2...v1.0.3
