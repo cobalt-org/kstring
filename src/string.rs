@@ -337,6 +337,14 @@ impl From<&'static str> for KString {
     }
 }
 
+impl std::str::FromStr for KString {
+    type Err = std::convert::Infallible;
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(KString::from_ref(s))
+    }
+}
+
 #[cfg(feature = "serde")]
 impl serde::Serialize for KString {
     #[inline]
