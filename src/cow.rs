@@ -327,6 +327,14 @@ impl<'s> From<&'s str> for KStringCow<'s> {
     }
 }
 
+impl std::str::FromStr for KStringCow<'_> {
+    type Err = std::convert::Infallible;
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from_string(s.into()))
+    }
+}
+
 #[cfg(feature = "serde")]
 impl<'s> serde::Serialize for KStringCow<'s> {
     #[inline]
