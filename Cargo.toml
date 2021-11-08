@@ -10,6 +10,13 @@ readme = "README.md"
 categories = ["data-structures", "text-processing"]
 keywords = ["serde", "serialization", "string"]
 edition = "2018"
+include = [
+  "src/**/*",
+  "Cargo.toml",
+  "LICENSE*",
+  "README.md",
+  "examples/**/*"
+]
 
 [package.metadata.release]
 pre-release-replacements = [
@@ -19,9 +26,6 @@ pre-release-replacements = [
   {file="CHANGELOG.md", search="<!-- next-header -->", replace="<!-- next-header -->\n## [Unreleased] - ReleaseDate\n", exactly=1},
   {file="CHANGELOG.md", search="<!-- next-url -->", replace="<!-- next-url -->\n[Unreleased]: https://github.com/cobalt-org/kstring/compare/{{tag_name}}...HEAD", exactly=1},
 ]
-
-[badges]
-maintenance = { status = "passively-maintained" }
 
 [features]
 default = ["serde"]
