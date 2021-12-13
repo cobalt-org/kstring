@@ -35,6 +35,7 @@ impl KString {
     /// Create an owned `KString`.
     #[inline]
     pub fn from_boxed(other: BoxedStr) -> Self {
+        #[allow(clippy::useless_conversion)]
         Self {
             inner: KStringInner::Owned(OwnedStr::from(other)),
         }
@@ -46,6 +47,7 @@ impl KString {
         let inner = if (0..=CAPACITY).contains(&other.len()) {
             KStringInner::Inline(InlineString::new(other.as_str()))
         } else {
+            #[allow(clippy::useless_conversion)]
             KStringInner::Owned(OwnedStr::from(other.into_boxed_str()))
         };
         Self { inner }
@@ -57,6 +59,7 @@ impl KString {
         let inner = if (0..=CAPACITY).contains(&other.len()) {
             KStringInner::Inline(InlineString::new(other))
         } else {
+            #[allow(clippy::useless_conversion)]
             KStringInner::Owned(OwnedStr::from(other))
         };
         Self { inner }
@@ -116,7 +119,7 @@ impl KStringInner {
         match self {
             Self::Singleton(s) => s,
             Self::Inline(s) => s.as_str(),
-            Self::Owned(s) => &s,
+            Self::Owned(s) => s,
         }
     }
 

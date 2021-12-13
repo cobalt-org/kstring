@@ -29,7 +29,7 @@ impl InlineString {
         let len = s.as_bytes().len();
         debug_assert!(len <= CAPACITY);
         let mut array = [0; CAPACITY];
-        array[..len].copy_from_slice(&s.as_bytes());
+        array[..len].copy_from_slice(s.as_bytes());
         Self {
             len: len as u8,
             array,
@@ -37,6 +37,7 @@ impl InlineString {
     }
 
     #[inline]
+    #[allow(clippy::wrong_self_convention)]
     pub(crate) fn to_boxed_str(&self) -> Box<str> {
         Box::from(self.as_str())
     }
