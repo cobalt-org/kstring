@@ -82,13 +82,13 @@ fn bench_clone(c: &mut Criterion) {
             b.iter(|| uut.clone())
         });
         #[cfg(not(feature = "bench_subset_unstable"))]
-        group.bench_with_input(BenchmarkId::new("SmolStr::new", len), &len, |b, _| {
+        group.bench_with_input(BenchmarkId::new("CompactStr::new", len), &len, |b, _| {
             let uut = compact_str::CompactStr::new(fixture);
             let uut = criterion::black_box(uut);
             b.iter(|| uut.clone())
         });
         #[cfg(not(feature = "bench_subset_unstable"))]
-        group.bench_with_input(BenchmarkId::new("SmolStr::new", len), &len, |b, _| {
+        group.bench_with_input(BenchmarkId::new("smartstring::new", len), &len, |b, _| {
             let uut = smartstring::alias::String::from(*fixture);
             let uut = criterion::black_box(uut);
             b.iter(|| uut.clone())

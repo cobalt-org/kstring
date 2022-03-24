@@ -83,13 +83,13 @@ fn bench_access(c: &mut Criterion) {
             b.iter(|| uut.is_empty())
         });
         #[cfg(not(feature = "bench_subset_unstable"))]
-        group.bench_with_input(BenchmarkId::new("SmolStr", len), &len, |b, _| {
+        group.bench_with_input(BenchmarkId::new("CompactStr", len), &len, |b, _| {
             let uut = compact_str::CompactStr::new(fixture);
             let uut = criterion::black_box(uut);
             b.iter(|| uut.is_empty())
         });
         #[cfg(not(feature = "bench_subset_unstable"))]
-        group.bench_with_input(BenchmarkId::new("SmolStr", len), &len, |b, _| {
+        group.bench_with_input(BenchmarkId::new("smartstring", len), &len, |b, _| {
             let uut = smartstring::alias::String::from(*fixture);
             let uut = criterion::black_box(uut);
             b.iter(|| uut.is_empty())
