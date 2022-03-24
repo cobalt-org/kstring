@@ -15,14 +15,7 @@ pub(crate) type OwnedStr = Box<str>;
 #[derive(Clone)]
 #[repr(transparent)]
 pub struct KString {
-    pub(crate) inner: KStringInner,
-}
-
-#[derive(Debug)]
-pub(crate) enum KStringInner {
-    Singleton(&'static str),
-    Inline(StackString<CAPACITY>),
-    Owned(OwnedStr),
+    inner: KStringInner,
 }
 
 impl KString {
@@ -35,49 +28,32 @@ impl KString {
     /// Create an owned `KString`.
     #[inline]
     pub fn from_boxed(other: BoxedStr) -> Self {
-        #[allow(clippy::useless_conversion)]
         Self {
-            inner: KStringInner::Owned(OwnedStr::from(other)),
+            inner: KStringInner::from_boxed(other),
         }
     }
 
     /// Create an owned `KString`.
     #[inline]
     pub fn from_string(other: StdString) -> Self {
-        let inner = if (0..=CAPACITY).contains(&other.len()) {
-            let inline = unsafe {
-                // SAFETY: range check ensured this is always safe
-                StackString::new_unchecked(other.as_str())
-            };
-            KStringInner::Inline(inline)
-        } else {
-            #[allow(clippy::useless_conversion)]
-            KStringInner::Owned(OwnedStr::from(other.into_boxed_str()))
-        };
-        Self { inner }
+        Self {
+            inner: KStringInner::from_string(other),
+        }
     }
 
     /// Create an owned `KString` optimally from a reference.
     #[inline]
     pub fn from_ref(other: &str) -> Self {
-        let inner = if (0..=CAPACITY).contains(&other.len()) {
-            let inline = unsafe {
-                // SAFETY: range check ensured this is always safe
-                StackString::new_unchecked(other)
-            };
-            KStringInner::Inline(inline)
-        } else {
-            #[allow(clippy::useless_conversion)]
-            KStringInner::Owned(OwnedStr::from(other))
-        };
-        Self { inner }
+        Self {
+            inner: KStringInner::from_ref(other),
+        }
     }
 
     /// Create a reference to a `'static` data.
     #[inline]
     pub fn from_static(other: &'static str) -> Self {
         Self {
-            inner: KStringInner::Singleton(other),
+            inner: KStringInner::from_static(other),
         }
     }
 
@@ -109,63 +85,6 @@ impl KString {
     #[inline]
     pub fn into_cow_str(self) -> Cow<'static, str> {
         self.inner.into_cow_str()
-    }
-}
-
-impl KStringInner {
-    #[inline]
-    fn as_ref(&self) -> KStringRef<'_> {
-        match self {
-            Self::Singleton(s) => KStringRef::from_static(s),
-            Self::Inline(s) => KStringRef::from_ref(s.as_str()),
-            Self::Owned(s) => KStringRef::from_ref(s),
-        }
-    }
-
-    #[inline]
-    fn as_str(&self) -> &str {
-        match self {
-            Self::Singleton(s) => s,
-            Self::Inline(s) => s.as_str(),
-            Self::Owned(s) => s,
-        }
-    }
-
-    #[inline]
-    fn into_boxed_str(self) -> BoxedStr {
-        match self {
-            Self::Singleton(s) => BoxedStr::from(s),
-            Self::Inline(s) => s.to_boxed_str(),
-            Self::Owned(s) => BoxedStr::from(s.as_ref()),
-        }
-    }
-
-    /// Convert to a Cow str
-    #[inline]
-    fn into_cow_str(self) -> Cow<'static, str> {
-        match self {
-            Self::Singleton(s) => Cow::Borrowed(s),
-            Self::Inline(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Owned(s) => Cow::Owned(s.as_ref().into()),
-        }
-    }
-}
-
-// Explicit to avoid inlining which cuts clone times in half.
-//
-// An automatically derived `clone()` has 10ns overhead while the explicit `Deref`/`as_str` has
-// none of that.  Being explicit and removing the `#[inline]` attribute dropped the overhead to
-// 5ns.
-//
-// My only guess is that the `clone()` calls we delegate to are just that much bigger than
-// `as_str()` that, when combined with a jump table, is blowing the icache, slowing things down.
-impl Clone for KStringInner {
-    fn clone(&self) -> Self {
-        match self {
-            Self::Singleton(s) => Self::Singleton(s),
-            Self::Inline(s) => Self::Inline(*s),
-            Self::Owned(s) => Self::Owned(s.clone()),
-        }
     }
 }
 
@@ -425,6 +344,116 @@ impl<'de> serde::de::Visitor<'de> for StringVisitor {
                 serde::de::Unexpected::Bytes(&e.into_bytes()),
                 &self,
             )),
+        }
+    }
+}
+
+use inner::KStringInner;
+
+mod inner {
+    use super::*;
+
+    #[derive(Debug)]
+    pub(super) enum KStringInner {
+        Singleton(&'static str),
+        Inline(StackString<CAPACITY>),
+        Owned(OwnedStr),
+    }
+
+    impl KStringInner {
+        #[inline]
+        pub(super) fn from_boxed(other: BoxedStr) -> Self {
+            #[allow(clippy::useless_conversion)]
+            Self::Owned(OwnedStr::from(other))
+        }
+
+        #[inline]
+        pub(super) fn from_string(other: StdString) -> Self {
+            if (0..=CAPACITY).contains(&other.len()) {
+                let inline = unsafe {
+                    // SAFETY: range check ensured this is always safe
+                    StackString::new_unchecked(other.as_str())
+                };
+                Self::Inline(inline)
+            } else {
+                #[allow(clippy::useless_conversion)]
+                Self::Owned(OwnedStr::from(other.into_boxed_str()))
+            }
+        }
+
+        #[inline]
+        pub(super) fn from_ref(other: &str) -> Self {
+            if (0..=CAPACITY).contains(&other.len()) {
+                let inline = unsafe {
+                    // SAFETY: range check ensured this is always safe
+                    StackString::new_unchecked(other)
+                };
+                Self::Inline(inline)
+            } else {
+                #[allow(clippy::useless_conversion)]
+                Self::Owned(OwnedStr::from(other))
+            }
+        }
+
+        /// Create a reference to a `'static` data.
+        #[inline]
+        pub fn from_static(other: &'static str) -> Self {
+            Self::Singleton(other)
+        }
+
+        #[inline]
+        pub(super) fn as_ref(&self) -> KStringRef<'_> {
+            match self {
+                Self::Singleton(s) => KStringRef::from_static(s),
+                Self::Inline(s) => KStringRef::from_ref(s.as_str()),
+                Self::Owned(s) => KStringRef::from_ref(s),
+            }
+        }
+
+        #[inline]
+        pub(super) fn as_str(&self) -> &str {
+            match self {
+                Self::Singleton(s) => s,
+                Self::Inline(s) => s.as_str(),
+                Self::Owned(s) => s,
+            }
+        }
+
+        #[inline]
+        pub(super) fn into_boxed_str(self) -> BoxedStr {
+            match self {
+                Self::Singleton(s) => BoxedStr::from(s),
+                Self::Inline(s) => s.to_boxed_str(),
+                Self::Owned(s) => BoxedStr::from(s.as_ref()),
+            }
+        }
+
+        /// Convert to a Cow str
+        #[inline]
+        pub(super) fn into_cow_str(self) -> Cow<'static, str> {
+            match self {
+                Self::Singleton(s) => Cow::Borrowed(s),
+                Self::Inline(s) => Cow::Owned(s.to_boxed_str().into()),
+                Self::Owned(s) => Cow::Owned(s.as_ref().into()),
+            }
+        }
+    }
+
+    // Explicit to avoid inlining which cuts clone times in half.
+    //
+    // An automatically derived `clone()` has 10ns overhead while the explicit `Deref`/`as_str` has
+    // none of that.  Being explicit and removing the `#[inline]` attribute dropped the overhead to
+    // 5ns.
+    //
+    // My only guess is that the `clone()` calls we delegate to are just that much bigger than
+    // `as_str()` that, when combined with a jump table, is blowing the icache, slowing things down.
+    impl Clone for KStringInner {
+        fn clone(&self) -> Self {
+            match self {
+                Self::Singleton(s) => Self::Singleton(s),
+                Self::Inline(s) => Self::Inline(*s),
+                Self::Owned(s) => Self::Owned(s.clone()),
+            }
         }
     }
 }
