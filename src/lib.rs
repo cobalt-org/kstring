@@ -18,13 +18,13 @@
 //! - Use `Box<str>` rather than `String` to use less memory.
 
 mod cow;
-mod inline;
 mod r#ref;
+mod stack;
 mod string;
 
 pub use cow::*;
-pub use inline::StackString;
 pub use r#ref::*;
+pub use stack::StackString;
 pub use string::*;
 
 #[cfg(test)]

@@ -1,6 +1,6 @@
 use std::{borrow::Cow, fmt};
 
-use crate::inline::*;
+use crate::stack::*;
 use crate::KStringCow;
 use crate::KStringRef;
 
