@@ -24,22 +24,25 @@ pub(crate) const CAPACITY: usize = ALIGNED_CAPACITY;
 #[derive(Copy, Clone)]
 pub(crate) struct InlineString<const C: usize> {
     len: Len,
-    array: [u8; C],
+    buffer: StrBuffer<C>,
 }
 
 impl<const C: usize> InlineString<C> {
-    const CAPACITY: usize = C;
-
     #[inline]
     pub(crate) unsafe fn new_unchecked(s: &str) -> Self {
-        let len = s.as_bytes().len();
-        debug_assert!(len <= C);
-        debug_assert!(Self::CAPACITY <= Len::MAX.into());
-        let mut array = [0; C];
-        array.get_unchecked_mut(..len).copy_from_slice(s.as_bytes());
-        Self {
-            len: len as u8,
-            array,
+        let len = s.as_bytes().len() as u8;
+        debug_assert!(C <= Len::MAX.into());
+        let buffer = StrBuffer::new_unchecked(s);
+        Self { len, buffer }
+    }
+
+    #[inline]
+    pub(crate) fn as_str(&self) -> &str {
+        let len = self.len as usize;
+        unsafe {
+            // SAFETY: Constructors guarantee that `buffer[..len]` is a `str`,
+            // and we don't mutate the data afterwards.
+            self.buffer.as_str(len)
         }
     }
 
@@ -48,23 +51,33 @@ impl<const C: usize> InlineString<C> {
     pub(crate) fn to_boxed_str(&self) -> Box<str> {
         Box::from(self.as_str())
     }
-
-    #[inline]
-    pub(crate) fn as_str(&self) -> &str {
-        let len = self.len as usize;
-        // SAFETY: Constructors guarantee that `buffer[..len]` is a `str`,
-        // and we don't mutate the data afterwards.
-        unsafe {
-            let slice = self.array.get_unchecked(..len);
-            std::str::from_utf8_unchecked(slice)
-        }
-    }
 }
 
 impl<const C: usize> fmt::Debug for InlineString<C> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Debug::fmt(self.as_str(), f)
+    }
+}
+
+#[derive(Copy, Clone)]
+#[repr(transparent)]
+pub(crate) struct StrBuffer<const C: usize>([u8; C]);
+
+impl<const C: usize> StrBuffer<C> {
+    #[inline]
+    pub(crate) unsafe fn new_unchecked(s: &str) -> Self {
+        let len = s.as_bytes().len();
+        debug_assert!(len <= C);
+        let mut array = [0; C];
+        array.get_unchecked_mut(..len).copy_from_slice(s.as_bytes());
+        Self(array)
+    }
+
+    #[inline]
+    pub(crate) unsafe fn as_str(&self, len: usize) -> &str {
+        let slice = self.0.get_unchecked(..len);
+        std::str::from_utf8_unchecked(slice)
     }
 }
 
