@@ -23,6 +23,7 @@ mod r#ref;
 mod string;
 
 pub use cow::*;
+pub use inline::StackString;
 pub use r#ref::*;
 pub use string::*;
 
