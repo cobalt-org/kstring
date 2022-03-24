@@ -30,6 +30,8 @@ mod string;
 mod string_cow;
 mod string_ref;
 
+pub mod backend;
+
 pub use stack::StackString;
 pub use string::*;
 pub use string_cow::*;
@@ -45,11 +47,11 @@ mod test {
         );
         println!(
             "Box<str>: {}",
-            std::mem::size_of::<crate::string::OwnedStr>()
+            std::mem::size_of::<crate::backend::DefaultStr>()
         );
         println!(
             "Box<Box<str>>: {}",
-            std::mem::size_of::<Box<crate::string::OwnedStr>>()
+            std::mem::size_of::<Box<crate::backend::DefaultStr>>()
         );
         println!("str: {}", std::mem::size_of::<&'static str>());
         println!(

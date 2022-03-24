@@ -5,33 +5,46 @@ use crate::KStringCow;
 use crate::KStringRef;
 
 pub(crate) type StdString = std::string::String;
-type BoxedStr = Box<str>;
-#[cfg(feature = "arc")]
-pub(crate) type OwnedStr = std::sync::Arc<str>;
-#[cfg(not(feature = "arc"))]
-pub(crate) type OwnedStr = Box<str>;
 
 /// A UTF-8 encoded, immutable string.
 #[derive(Clone)]
 #[repr(transparent)]
-pub struct KString {
-    inner: KStringInner,
+pub struct KString<B = crate::backend::DefaultStr> {
+    inner: KStringInner<B>,
 }
 
-impl KString {
+impl<B> KString<B> {
     pub const EMPTY: Self = KString::from_static("");
 
     /// Create a new empty `KString`.
     #[inline]
     #[must_use]
     pub fn new() -> Self {
-        Default::default()
+        Self::EMPTY
     }
 
+    /// Create a reference to a `'static` data.
+    #[inline]
+    #[must_use]
+    pub const fn from_static(other: &'static str) -> Self {
+        Self {
+            inner: KStringInner::from_static(other),
+        }
+    }
+
+    /// Create an inline string, if possible
+    #[inline]
+    #[must_use]
+    pub fn try_inline(other: &str) -> Option<Self> {
+        KStringInner::try_inline(other).map(|inner| Self { inner })
+    }
+}
+
+impl<B: crate::backend::StorageBackend> KString<B> {
     /// Create an owned `KString`.
     #[inline]
     #[must_use]
-    pub fn from_boxed(other: BoxedStr) -> Self {
+    pub fn from_boxed(other: crate::backend::BoxedStr) -> Self {
         Self {
             inner: KStringInner::from_boxed(other),
         }
@@ -53,22 +66,6 @@ impl KString {
         Self {
             inner: KStringInner::from_ref(other),
         }
-    }
-
-    /// Create a reference to a `'static` data.
-    #[inline]
-    #[must_use]
-    pub const fn from_static(other: &'static str) -> Self {
-        Self {
-            inner: KStringInner::from_static(other),
-        }
-    }
-
-    /// Create an inline string, if possible
-    #[inline]
-    #[must_use]
-    pub fn try_inline(other: &str) -> Option<Self> {
-        KStringInner::try_inline(other).map(|inner| Self { inner })
     }
 
     /// Get a reference to the `KString`.
@@ -95,7 +92,7 @@ impl KString {
     /// Convert to a mutable string type, cloning the data if necessary.
     #[inline]
     #[must_use]
-    pub fn into_boxed_str(self) -> BoxedStr {
+    pub fn into_boxed_str(self) -> crate::backend::BoxedStr {
         self.inner.into_boxed_str()
     }
 
@@ -107,7 +104,7 @@ impl KString {
     }
 }
 
-impl std::ops::Deref for KString {
+impl<B: crate::backend::StorageBackend> std::ops::Deref for KString<B> {
     type Target = str;
 
     #[inline]
@@ -116,186 +113,186 @@ impl std::ops::Deref for KString {
     }
 }
 
-impl Eq for KString {}
+impl<B: crate::backend::StorageBackend> Eq for KString<B> {}
 
-impl<'s> PartialEq<KString> for KString {
+impl<'s, B: crate::backend::StorageBackend> PartialEq<KString<B>> for KString<B> {
     #[inline]
-    fn eq(&self, other: &KString) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         PartialEq::eq(self.as_str(), other.as_str())
     }
 }
 
-impl<'s> PartialEq<str> for KString {
+impl<'s, B: crate::backend::StorageBackend> PartialEq<str> for KString<B> {
     #[inline]
     fn eq(&self, other: &str) -> bool {
         PartialEq::eq(self.as_str(), other)
     }
 }
 
-impl<'s> PartialEq<&'s str> for KString {
+impl<'s, B: crate::backend::StorageBackend> PartialEq<&'s str> for KString<B> {
     #[inline]
     fn eq(&self, other: &&str) -> bool {
         PartialEq::eq(self.as_str(), *other)
     }
 }
 
-impl<'s> PartialEq<String> for KString {
+impl<'s, B: crate::backend::StorageBackend> PartialEq<String> for KString<B> {
     #[inline]
     fn eq(&self, other: &StdString) -> bool {
         PartialEq::eq(self.as_str(), other.as_str())
     }
 }
 
-impl Ord for KString {
+impl<B: crate::backend::StorageBackend> Ord for KString<B> {
     #[inline]
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.as_str().cmp(other.as_str())
     }
 }
 
-impl PartialOrd for KString {
+impl<B: crate::backend::StorageBackend> PartialOrd for KString<B> {
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         self.as_str().partial_cmp(other.as_str())
     }
 }
 
-impl std::hash::Hash for KString {
+impl<B: crate::backend::StorageBackend> std::hash::Hash for KString<B> {
     #[inline]
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.as_str().hash(state);
     }
 }
 
-impl fmt::Debug for KString {
+impl<B: crate::backend::StorageBackend> fmt::Debug for KString<B> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.as_str().fmt(f)
     }
 }
 
-impl fmt::Display for KString {
+impl<B: crate::backend::StorageBackend> fmt::Display for KString<B> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self.as_str(), f)
     }
 }
 
-impl AsRef<str> for KString {
+impl<B: crate::backend::StorageBackend> AsRef<str> for KString<B> {
     #[inline]
     fn as_ref(&self) -> &str {
         self.as_str()
     }
 }
 
-impl AsRef<[u8]> for KString {
+impl<B: crate::backend::StorageBackend> AsRef<[u8]> for KString<B> {
     #[inline]
     fn as_ref(&self) -> &[u8] {
         self.as_bytes()
     }
 }
 
-impl AsRef<std::ffi::OsStr> for KString {
+impl<B: crate::backend::StorageBackend> AsRef<std::ffi::OsStr> for KString<B> {
     #[inline]
     fn as_ref(&self) -> &std::ffi::OsStr {
         (&**self).as_ref()
     }
 }
 
-impl AsRef<std::path::Path> for KString {
+impl<B: crate::backend::StorageBackend> AsRef<std::path::Path> for KString<B> {
     #[inline]
     fn as_ref(&self) -> &std::path::Path {
         std::path::Path::new(self)
     }
 }
 
-impl std::borrow::Borrow<str> for KString {
+impl<B: crate::backend::StorageBackend> std::borrow::Borrow<str> for KString<B> {
     #[inline]
     fn borrow(&self) -> &str {
         self.as_str()
     }
 }
 
-impl Default for KString {
+impl<B: crate::backend::StorageBackend> Default for KString<B> {
     #[inline]
     fn default() -> Self {
-        Self::from_static("")
+        Self::new()
     }
 }
 
-impl<'s> From<KStringRef<'s>> for KString {
+impl<'s, B: crate::backend::StorageBackend> From<KStringRef<'s>> for KString<B> {
     #[inline]
     fn from(other: KStringRef<'s>) -> Self {
         other.to_owned()
     }
 }
 
-impl<'s> From<&'s KStringRef<'s>> for KString {
+impl<'s, B: crate::backend::StorageBackend> From<&'s KStringRef<'s>> for KString<B> {
     #[inline]
     fn from(other: &'s KStringRef<'s>) -> Self {
         other.to_owned()
     }
 }
 
-impl<'s> From<KStringCow<'s>> for KString {
+impl<'s, B: crate::backend::StorageBackend> From<KStringCow<'s, B>> for KString<B> {
     #[inline]
-    fn from(other: KStringCow<'s>) -> Self {
+    fn from(other: KStringCow<'s, B>) -> Self {
         other.into_owned()
     }
 }
 
-impl<'s> From<&'s KStringCow<'s>> for KString {
+impl<'s, B: crate::backend::StorageBackend> From<&'s KStringCow<'s, B>> for KString<B> {
     #[inline]
-    fn from(other: &'s KStringCow<'s>) -> Self {
+    fn from(other: &'s KStringCow<'s, B>) -> Self {
         other.clone().into_owned()
     }
 }
 
-impl From<StdString> for KString {
+impl<B: crate::backend::StorageBackend> From<StdString> for KString<B> {
     #[inline]
     fn from(other: StdString) -> Self {
         Self::from_string(other)
     }
 }
 
-impl<'s> From<&'s StdString> for KString {
+impl<'s, B: crate::backend::StorageBackend> From<&'s StdString> for KString<B> {
     #[inline]
     fn from(other: &'s StdString) -> Self {
         Self::from_ref(other)
     }
 }
 
-impl From<BoxedStr> for KString {
+impl<B: crate::backend::StorageBackend> From<crate::backend::BoxedStr> for KString<B> {
     #[inline]
-    fn from(other: BoxedStr) -> Self {
+    fn from(other: crate::backend::BoxedStr) -> Self {
         Self::from_boxed(other)
     }
 }
 
-impl<'s> From<&'s BoxedStr> for KString {
+impl<'s, B: crate::backend::StorageBackend> From<&'s crate::backend::BoxedStr> for KString<B> {
     #[inline]
-    fn from(other: &'s BoxedStr) -> Self {
+    fn from(other: &'s crate::backend::BoxedStr) -> Self {
         Self::from_ref(other)
     }
 }
 
-impl From<&'static str> for KString {
+impl<B: crate::backend::StorageBackend> From<&'static str> for KString<B> {
     #[inline]
     fn from(other: &'static str) -> Self {
         Self::from_static(other)
     }
 }
 
-impl std::str::FromStr for KString {
+impl<B: crate::backend::StorageBackend> std::str::FromStr for KString<B> {
     type Err = std::convert::Infallible;
     #[inline]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(KString::from_ref(s))
+        Ok(Self::from_ref(s))
     }
 }
 
 #[cfg(feature = "serde")]
-impl serde::Serialize for KString {
+impl<B: crate::backend::StorageBackend> serde::Serialize for KString<B> {
     #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -306,21 +303,21 @@ impl serde::Serialize for KString {
 }
 
 #[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for KString {
+impl<'de, B: crate::backend::StorageBackend> serde::Deserialize<'de> for KString<B> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
-        deserializer.deserialize_string(StringVisitor)
+        deserializer.deserialize_string(StringVisitor(std::marker::PhantomData))
     }
 }
 
 #[cfg(feature = "serde")]
-struct StringVisitor;
+struct StringVisitor<B>(std::marker::PhantomData<B>);
 
 #[cfg(feature = "serde")]
-impl<'de> serde::de::Visitor<'de> for StringVisitor {
-    type Value = KString;
+impl<'de, B: crate::backend::StorageBackend> serde::de::Visitor<'de> for StringVisitor<B> {
+    type Value = KString<B>;
 
     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str("a string")
@@ -330,14 +327,14 @@ impl<'de> serde::de::Visitor<'de> for StringVisitor {
     where
         E: serde::de::Error,
     {
-        Ok(KString::from_ref(v))
+        Ok(Self::Value::from_ref(v))
     }
 
     fn visit_string<E>(self, v: String) -> Result<Self::Value, E>
     where
         E: serde::de::Error,
     {
-        Ok(KString::from_string(v))
+        Ok(Self::Value::from_string(v))
     }
 
     fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
@@ -345,7 +342,7 @@ impl<'de> serde::de::Visitor<'de> for StringVisitor {
         E: serde::de::Error,
     {
         match std::str::from_utf8(v) {
-            Ok(s) => Ok(KString::from_ref(s)),
+            Ok(s) => Ok(Self::Value::from_ref(s)),
             Err(_) => Err(serde::de::Error::invalid_value(
                 serde::de::Unexpected::Bytes(v),
                 &self,
@@ -358,7 +355,7 @@ impl<'de> serde::de::Visitor<'de> for StringVisitor {
         E: serde::de::Error,
     {
         match String::from_utf8(v) {
-            Ok(s) => Ok(KString::from_string(s)),
+            Ok(s) => Ok(Self::Value::from_string(s)),
             Err(e) => Err(serde::de::Error::invalid_value(
                 serde::de::Unexpected::Bytes(&e.into_bytes()),
                 &self,
@@ -373,41 +370,13 @@ use inner::KStringInner;
 mod inner {
     use super::*;
 
-    pub(super) enum KStringInner {
+    pub(super) enum KStringInner<B> {
         Singleton(&'static str),
         Inline(StackString<CAPACITY>),
-        Owned(OwnedStr),
+        Owned(B),
     }
 
-    impl KStringInner {
-        #[inline]
-        pub(super) fn from_boxed(other: BoxedStr) -> Self {
-            #[allow(clippy::useless_conversion)]
-            Self::Owned(OwnedStr::from(other))
-        }
-
-        #[inline]
-        pub(super) fn from_string(other: StdString) -> Self {
-            if (0..=CAPACITY).contains(&other.len()) {
-                let inline = { StackString::new(other.as_str()) };
-                Self::Inline(inline)
-            } else {
-                #[allow(clippy::useless_conversion)]
-                Self::Owned(OwnedStr::from(other.into_boxed_str()))
-            }
-        }
-
-        #[inline]
-        pub(super) fn from_ref(other: &str) -> Self {
-            if (0..=CAPACITY).contains(&other.len()) {
-                let inline = { StackString::new(other) };
-                Self::Inline(inline)
-            } else {
-                #[allow(clippy::useless_conversion)]
-                Self::Owned(OwnedStr::from(other))
-            }
-        }
-
+    impl<B> KStringInner<B> {
         /// Create a reference to a `'static` data.
         #[inline]
         pub const fn from_static(other: &'static str) -> Self {
@@ -417,6 +386,34 @@ mod inner {
         #[inline]
         pub fn try_inline(other: &str) -> Option<Self> {
             StackString::try_new(other).map(Self::Inline)
+        }
+    }
+
+    impl<B: crate::backend::StorageBackend> KStringInner<B> {
+        #[inline]
+        pub(super) fn from_boxed(other: BoxedStr) -> Self {
+            #[allow(clippy::useless_conversion)]
+            Self::Owned(B::from_boxed_str(other))
+        }
+
+        #[inline]
+        pub(super) fn from_string(other: StdString) -> Self {
+            if (0..=CAPACITY).contains(&other.len()) {
+                let inline = { StackString::new(other.as_str()) };
+                Self::Inline(inline)
+            } else {
+                Self::from_boxed(other.into_boxed_str())
+            }
+        }
+
+        #[inline]
+        pub(super) fn from_ref(other: &str) -> Self {
+            if (0..=CAPACITY).contains(&other.len()) {
+                let inline = { StackString::new(other) };
+                Self::Inline(inline)
+            } else {
+                Self::Owned(B::from_str(other))
+            }
         }
 
         #[inline]
@@ -465,7 +462,7 @@ mod inner {
     //
     // My only guess is that the `clone()` calls we delegate to are just that much bigger than
     // `as_str()` that, when combined with a jump table, is blowing the icache, slowing things down.
-    impl Clone for KStringInner {
+    impl<B: crate::backend::StorageBackend> Clone for KStringInner<B> {
         fn clone(&self) -> Self {
             match self {
                 Self::Singleton(s) => Self::Singleton(s),
@@ -489,7 +486,7 @@ mod inner {
     // discriminant.  The question is whether faster len=1-16 "allocations" outweighs going to the heap
     // for len=17-22.
     #[allow(unused)]
-    const ALIGNED_CAPACITY: usize = std::mem::size_of::<crate::string::OwnedStr>() - LEN_SIZE;
+    const ALIGNED_CAPACITY: usize = std::mem::size_of::<crate::backend::DefaultStr>() - LEN_SIZE;
 
     #[cfg(feature = "max_inline")]
     const CAPACITY: usize = MAX_CAPACITY;
@@ -501,18 +498,43 @@ mod inner {
 mod inner {
     use super::*;
 
-    pub(super) union KStringInner {
+    pub(super) union KStringInner<B> {
         tag: TagVariant,
         singleton: SingletonVariant,
-        owned: std::mem::ManuallyDrop<OwnedVariant>,
+        owned: std::mem::ManuallyDrop<OwnedVariant<B>>,
         inline: InlineVariant,
     }
 
-    impl KStringInner {
+    impl<B> KStringInner<B> {
+        /// Create a reference to a `'static` data.
         #[inline]
-        pub(super) fn from_boxed(other: BoxedStr) -> Self {
+        pub const fn from_static(other: &'static str) -> Self {
+            Self {
+                singleton: SingletonVariant::new(other),
+            }
+        }
+
+        #[inline]
+        pub fn try_inline(other: &str) -> Option<Self> {
+            StackString::try_new(other).map(|inline| Self {
+                inline: InlineVariant::new(inline),
+            })
+        }
+
+        #[inline]
+        const fn tag(&self) -> Tag {
+            unsafe {
+                // SAFETY: `tag` is in the same spot in each variant
+                self.tag.tag
+            }
+        }
+    }
+
+    impl<B: crate::backend::StorageBackend> KStringInner<B> {
+        #[inline]
+        pub(super) fn from_boxed(other: crate::backend::BoxedStr) -> Self {
             #[allow(clippy::useless_conversion)]
-            let payload = OwnedStr::from(other);
+            let payload = B::from_boxed_str(other);
             Self {
                 owned: std::mem::ManuallyDrop::new(OwnedVariant::new(payload)),
             }
@@ -545,26 +567,11 @@ mod inner {
                 }
             } else {
                 #[allow(clippy::useless_conversion)]
-                let payload = OwnedStr::from(other);
+                let payload = B::from_str(other);
                 Self {
                     owned: std::mem::ManuallyDrop::new(OwnedVariant::new(payload)),
                 }
             }
-        }
-
-        /// Create a reference to a `'static` data.
-        #[inline]
-        pub const fn from_static(other: &'static str) -> Self {
-            Self {
-                singleton: SingletonVariant::new(other),
-            }
-        }
-
-        #[inline]
-        pub fn try_inline(other: &str) -> Option<Self> {
-            StackString::try_new(other).map(|inline| Self {
-                inline: InlineVariant::new(inline),
-            })
         }
 
         #[inline]
@@ -575,7 +582,7 @@ mod inner {
                 if tag.is_singleton() {
                     KStringRef::from_static(self.singleton.payload)
                 } else if tag.is_owned() {
-                    KStringRef::from_ref(self.owned.payload.as_ref())
+                    KStringRef::from_ref(self.owned.payload.as_str())
                 } else {
                     debug_assert!(tag.is_inline());
                     KStringRef::from_ref(self.inline.payload.as_str())
@@ -591,7 +598,7 @@ mod inner {
                 if tag.is_singleton() {
                     self.singleton.payload
                 } else if tag.is_owned() {
-                    self.owned.payload.as_ref()
+                    self.owned.payload.as_str()
                 } else {
                     debug_assert!(tag.is_inline());
                     self.inline.payload.as_str()
@@ -600,17 +607,17 @@ mod inner {
         }
 
         #[inline]
-        pub(super) fn into_boxed_str(self) -> BoxedStr {
+        pub(super) fn into_boxed_str(self) -> crate::backend::BoxedStr {
             let tag = self.tag();
             unsafe {
                 // SAFETY: `tag` ensures access to correct variant
                 if tag.is_singleton() {
-                    BoxedStr::from(self.singleton.payload)
+                    crate::backend::BoxedStr::from(self.singleton.payload)
                 } else if tag.is_owned() {
-                    BoxedStr::from(self.owned.payload.as_ref())
+                    crate::backend::BoxedStr::from(self.owned.payload.as_str())
                 } else {
                     debug_assert!(tag.is_inline());
-                    BoxedStr::from(self.inline.payload.as_ref())
+                    crate::backend::BoxedStr::from(self.inline.payload.as_ref())
                 }
             }
         }
@@ -624,19 +631,11 @@ mod inner {
                 if tag.is_singleton() {
                     Cow::Borrowed(self.singleton.payload)
                 } else if tag.is_owned() {
-                    Cow::Owned(self.owned.payload.as_ref().into())
+                    Cow::Owned(self.owned.payload.as_str().into())
                 } else {
                     debug_assert!(tag.is_inline());
                     Cow::Owned(self.inline.payload.as_str().into())
                 }
-            }
-        }
-
-        #[inline]
-        fn tag(&self) -> Tag {
-            unsafe {
-                // SAFETY: `tag` is in the same spot in each variant
-                self.tag.tag
             }
         }
     }
@@ -649,7 +648,7 @@ mod inner {
     //
     // My only guess is that the `clone()` calls we delegate to are just that much bigger than
     // `as_str()` that, when combined with a jump table, is blowing the icache, slowing things down.
-    impl Clone for KStringInner {
+    impl<B: Clone> Clone for KStringInner<B> {
         fn clone(&self) -> Self {
             let tag = self.tag();
             if tag.is_owned() {
@@ -671,7 +670,7 @@ mod inner {
         }
     }
 
-    impl Drop for KStringInner {
+    impl<B> Drop for KStringInner<B> {
         fn drop(&mut self) {
             let tag = self.tag();
             if tag.is_owned() {
@@ -690,7 +689,7 @@ mod inner {
     const TAG_SIZE: usize = std::mem::size_of::<Tag>();
 
     #[allow(unused)]
-    const PAYLOAD_SIZE: usize = std::mem::size_of::<crate::string::OwnedStr>();
+    const PAYLOAD_SIZE: usize = std::mem::size_of::<crate::backend::DefaultStr>();
     type Payload = Padding<PAYLOAD_SIZE>;
 
     #[allow(unused)]
@@ -753,17 +752,17 @@ mod inner {
 
     #[derive(Clone)]
     #[repr(C)]
-    struct OwnedVariant {
-        payload: OwnedStr,
+    struct OwnedVariant<B> {
+        payload: B,
         pad: Padding<PAYLOAD_PAD_SIZE>,
         tag: Tag,
     }
-    static_assertions::assert_eq_size!(Payload, std::mem::ManuallyDrop<crate::string::OwnedStr>);
-    static_assertions::assert_eq_size!(Target, OwnedVariant);
+    static_assertions::assert_eq_size!(Payload, crate::backend::DefaultStr);
+    static_assertions::assert_eq_size!(Target, OwnedVariant<crate::backend::DefaultStr>);
 
-    impl OwnedVariant {
+    impl<B> OwnedVariant<B> {
         #[inline]
-        const fn new(payload: OwnedStr) -> Self {
+        const fn new(payload: B) -> Self {
             Self {
                 payload,
                 pad: Padding::new(),
@@ -772,7 +771,7 @@ mod inner {
         }
     }
 
-    impl std::fmt::Debug for OwnedVariant {
+    impl<B: crate::backend::StorageBackend> std::fmt::Debug for OwnedVariant<B> {
         #[inline]
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             self.payload.fmt(f)
