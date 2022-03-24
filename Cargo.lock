@@ -237,6 +237,7 @@ dependencies = [
  "serde",
  "smartstring",
  "smol_str",
+ "static_assertions",
 ]
 
 [[package]]

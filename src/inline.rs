@@ -3,8 +3,9 @@ use std::fmt;
 #[allow(unused)]
 const TAG_SIZE: usize = std::mem::size_of::<u8>();
 
+type Len = u8;
 #[allow(unused)]
-const LEN_SIZE: usize = std::mem::size_of::<u8>();
+const LEN_SIZE: usize = std::mem::size_of::<Len>();
 
 #[allow(unused)]
 const MAX_CAPACITY: usize = std::mem::size_of::<crate::string::StdString>() - TAG_SIZE - LEN_SIZE;
@@ -21,17 +22,20 @@ pub(crate) const CAPACITY: usize = MAX_CAPACITY;
 pub(crate) const CAPACITY: usize = ALIGNED_CAPACITY;
 
 #[derive(Copy, Clone)]
-pub(crate) struct InlineString {
-    len: u8,
-    array: [u8; CAPACITY],
+pub(crate) struct InlineString<const C: usize> {
+    len: Len,
+    array: [u8; C],
 }
 
-impl InlineString {
+impl<const C: usize> InlineString<C> {
+    const CAPACITY: usize = C;
+
     #[inline]
     pub(crate) unsafe fn new_unchecked(s: &str) -> Self {
         let len = s.as_bytes().len();
-        debug_assert!(len <= CAPACITY);
-        let mut array = [0; CAPACITY];
+        debug_assert!(len <= C);
+        debug_assert!(Self::CAPACITY <= Len::MAX.into());
+        let mut array = [0; C];
         array.get_unchecked_mut(..len).copy_from_slice(s.as_bytes());
         Self {
             len: len as u8,
@@ -57,7 +61,7 @@ impl InlineString {
     }
 }
 
-impl fmt::Debug for InlineString {
+impl<const C: usize> fmt::Debug for InlineString<C> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Debug::fmt(self.as_str(), f)
@@ -70,6 +74,9 @@ mod test {
 
     #[test]
     fn test_size() {
-        println!("InlineString: {}", std::mem::size_of::<InlineString>());
+        println!(
+            "InlineString: {}",
+            std::mem::size_of::<InlineString<CAPACITY>>()
+        );
     }
 }

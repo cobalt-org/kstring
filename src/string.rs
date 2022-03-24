@@ -21,7 +21,7 @@ pub struct KString {
 #[derive(Debug)]
 pub(crate) enum KStringInner {
     Singleton(&'static str),
-    Inline(InlineString),
+    Inline(InlineString<CAPACITY>),
     Owned(OwnedStr),
 }
 
