@@ -22,12 +22,12 @@ pub(crate) const CAPACITY: usize = MAX_CAPACITY;
 pub(crate) const CAPACITY: usize = ALIGNED_CAPACITY;
 
 #[derive(Copy, Clone)]
-pub(crate) struct InlineString<const C: usize> {
+pub(crate) struct StackString<const C: usize> {
     len: Len,
     buffer: StrBuffer<C>,
 }
 
-impl<const C: usize> InlineString<C> {
+impl<const C: usize> StackString<C> {
     #[inline]
     pub(crate) unsafe fn new_unchecked(s: &str) -> Self {
         let len = s.as_bytes().len() as u8;
@@ -53,7 +53,7 @@ impl<const C: usize> InlineString<C> {
     }
 }
 
-impl<const C: usize> fmt::Debug for InlineString<C> {
+impl<const C: usize> fmt::Debug for StackString<C> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Debug::fmt(self.as_str(), f)
@@ -88,8 +88,8 @@ mod test {
     #[test]
     fn test_size() {
         println!(
-            "InlineString: {}",
-            std::mem::size_of::<InlineString<CAPACITY>>()
+            "StackString: {}",
+            std::mem::size_of::<StackString<CAPACITY>>()
         );
     }
 }

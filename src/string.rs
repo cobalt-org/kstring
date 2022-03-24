@@ -21,7 +21,7 @@ pub struct KString {
 #[derive(Debug)]
 pub(crate) enum KStringInner {
     Singleton(&'static str),
-    Inline(InlineString<CAPACITY>),
+    Inline(StackString<CAPACITY>),
     Owned(OwnedStr),
 }
 
@@ -47,7 +47,7 @@ impl KString {
         let inner = if (0..=CAPACITY).contains(&other.len()) {
             let inline = unsafe {
                 // SAFETY: range check ensured this is always safe
-                InlineString::new_unchecked(other.as_str())
+                StackString::new_unchecked(other.as_str())
             };
             KStringInner::Inline(inline)
         } else {
@@ -63,7 +63,7 @@ impl KString {
         let inner = if (0..=CAPACITY).contains(&other.len()) {
             let inline = unsafe {
                 // SAFETY: range check ensured this is always safe
-                InlineString::new_unchecked(other)
+                StackString::new_unchecked(other)
             };
             KStringInner::Inline(inline)
         } else {
