@@ -151,7 +151,7 @@ impl std::hash::Hash for KString {
 impl fmt::Debug for KString {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Debug::fmt(&self.inner, f)
+        self.as_str().fmt(f)
     }
 }
 
@@ -353,7 +353,6 @@ use inner::KStringInner;
 mod inner {
     use super::*;
 
-    #[derive(Debug)]
     pub(super) enum KStringInner {
         Singleton(&'static str),
         Inline(StackString<CAPACITY>),
