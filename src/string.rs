@@ -19,6 +19,8 @@ pub struct KString {
 }
 
 impl KString {
+    pub const EMPTY: Self = KString::from_static("");
+
     /// Create a new empty `KString`.
     #[inline]
     pub fn new() -> Self {
@@ -51,7 +53,7 @@ impl KString {
 
     /// Create a reference to a `'static` data.
     #[inline]
-    pub fn from_static(other: &'static str) -> Self {
+    pub const fn from_static(other: &'static str) -> Self {
         Self {
             inner: KStringInner::from_static(other),
         }
@@ -359,92 +361,142 @@ use inner::KStringInner;
 mod inner {
     use super::*;
 
-    pub(super) enum KStringInner {
-        Singleton(&'static str),
-        Inline(StackString<CAPACITY>),
-        Owned(OwnedStr),
+    pub(super) union KStringInner {
+        tag: TagVariant,
+        singleton: SingletonVariant,
+        owned: std::mem::ManuallyDrop<OwnedVariant>,
+        inline: InlineVariant,
     }
 
     impl KStringInner {
         #[inline]
         pub(super) fn from_boxed(other: BoxedStr) -> Self {
             #[allow(clippy::useless_conversion)]
-            Self::Owned(OwnedStr::from(other))
+            let payload = OwnedStr::from(other);
+            Self {
+                owned: std::mem::ManuallyDrop::new(OwnedVariant::new(payload)),
+            }
         }
 
         #[inline]
         pub(super) fn from_string(other: StdString) -> Self {
             if (0..=CAPACITY).contains(&other.len()) {
-                let inline = unsafe {
+                let payload = unsafe {
                     // SAFETY: range check ensured this is always safe
                     StackString::new_unchecked(other.as_str())
                 };
-                Self::Inline(inline)
+                Self {
+                    inline: InlineVariant::new(payload),
+                }
             } else {
-                #[allow(clippy::useless_conversion)]
-                Self::Owned(OwnedStr::from(other.into_boxed_str()))
+                Self::from_boxed(other.into_boxed_str())
             }
         }
 
         #[inline]
         pub(super) fn from_ref(other: &str) -> Self {
             if (0..=CAPACITY).contains(&other.len()) {
-                let inline = unsafe {
+                let payload = unsafe {
                     // SAFETY: range check ensured this is always safe
                     StackString::new_unchecked(other)
                 };
-                Self::Inline(inline)
+                Self {
+                    inline: InlineVariant::new(payload),
+                }
             } else {
                 #[allow(clippy::useless_conversion)]
-                Self::Owned(OwnedStr::from(other))
+                let payload = OwnedStr::from(other);
+                Self {
+                    owned: std::mem::ManuallyDrop::new(OwnedVariant::new(payload)),
+                }
             }
         }
 
         /// Create a reference to a `'static` data.
         #[inline]
-        pub fn from_static(other: &'static str) -> Self {
-            Self::Singleton(other)
+        pub const fn from_static(other: &'static str) -> Self {
+            Self {
+                singleton: SingletonVariant::new(other),
+            }
         }
 
         #[inline]
         pub fn try_inline(other: impl AsRef<str>) -> Option<Self> {
-            StackString::try_new(other).map(Self::Inline)
+            StackString::try_new(other).map(|inline| Self {
+                inline: InlineVariant::new(inline),
+            })
         }
 
         #[inline]
         pub(super) fn as_ref(&self) -> KStringRef<'_> {
-            match self {
-                Self::Singleton(s) => KStringRef::from_static(s),
-                Self::Inline(s) => KStringRef::from_ref(s.as_str()),
-                Self::Owned(s) => KStringRef::from_ref(s),
+            let tag = self.tag();
+            unsafe {
+                // SAFETY: `tag` ensures access to correct variant
+                if tag.is_singleton() {
+                    KStringRef::from_static(self.singleton.payload)
+                } else if tag.is_owned() {
+                    KStringRef::from_ref(self.owned.payload.as_ref())
+                } else {
+                    debug_assert!(tag.is_inline());
+                    KStringRef::from_ref(self.inline.payload.as_str())
+                }
             }
         }
 
         #[inline]
         pub(super) fn as_str(&self) -> &str {
-            match self {
-                Self::Singleton(s) => s,
-                Self::Inline(s) => s.as_str(),
-                Self::Owned(s) => s,
+            let tag = self.tag();
+            unsafe {
+                // SAFETY: `tag` ensures access to correct variant
+                if tag.is_singleton() {
+                    self.singleton.payload
+                } else if tag.is_owned() {
+                    self.owned.payload.as_ref()
+                } else {
+                    debug_assert!(tag.is_inline());
+                    self.inline.payload.as_str()
+                }
             }
         }
 
         #[inline]
         pub(super) fn into_boxed_str(self) -> BoxedStr {
-            match self {
-                Self::Singleton(s) => BoxedStr::from(s),
-                Self::Inline(s) => s.to_boxed_str(),
-                Self::Owned(s) => BoxedStr::from(s.as_ref()),
+            let tag = self.tag();
+            unsafe {
+                // SAFETY: `tag` ensures access to correct variant
+                if tag.is_singleton() {
+                    BoxedStr::from(self.singleton.payload)
+                } else if tag.is_owned() {
+                    BoxedStr::from(self.owned.payload.as_ref())
+                } else {
+                    debug_assert!(tag.is_inline());
+                    BoxedStr::from(self.inline.payload.as_ref())
+                }
             }
         }
 
         /// Convert to a Cow str
         #[inline]
         pub(super) fn into_cow_str(self) -> Cow<'static, str> {
-            match self {
-                Self::Singleton(s) => Cow::Borrowed(s),
-                Self::Inline(s) => Cow::Owned(s.to_boxed_str().into()),
-                Self::Owned(s) => Cow::Owned(s.as_ref().into()),
+            let tag = self.tag();
+            unsafe {
+                // SAFETY: `tag` ensures access to correct variant
+                if tag.is_singleton() {
+                    Cow::Borrowed(self.singleton.payload)
+                } else if tag.is_owned() {
+                    Cow::Owned(self.owned.payload.as_ref().into())
+                } else {
+                    debug_assert!(tag.is_inline());
+                    Cow::Owned(self.inline.payload.as_str().into())
+                }
+            }
+        }
+
+        #[inline]
+        fn tag(&self) -> Tag {
+            unsafe {
+                // SAFETY: `tag` is in the same spot in each variant
+                self.tag.tag
             }
         }
     }
@@ -459,10 +511,37 @@ mod inner {
     // `as_str()` that, when combined with a jump table, is blowing the icache, slowing things down.
     impl Clone for KStringInner {
         fn clone(&self) -> Self {
-            match self {
-                Self::Singleton(s) => Self::Singleton(s),
-                Self::Inline(s) => Self::Inline(*s),
-                Self::Owned(s) => Self::Owned(s.clone()),
+            let tag = self.tag();
+            unsafe {
+                // SAFETY: `tag` ensures access to correct variant
+                if tag.is_singleton() {
+                    Self {
+                        singleton: self.singleton,
+                    }
+                } else if tag.is_owned() {
+                    Self {
+                        owned: std::mem::ManuallyDrop::new(OwnedVariant::new(
+                            self.owned.payload.clone(),
+                        )),
+                    }
+                } else {
+                    debug_assert!(tag.is_inline());
+                    Self {
+                        inline: self.inline,
+                    }
+                }
+            }
+        }
+    }
+
+    impl Drop for KStringInner {
+        fn drop(&mut self) {
+            let tag = self.tag();
+            if tag.is_owned() {
+                unsafe {
+                    // SAFETY: `tag` ensures we are using the right variant
+                    std::mem::ManuallyDrop::drop(&mut self.owned)
+                }
             }
         }
     }
@@ -471,22 +550,169 @@ mod inner {
     const LEN_SIZE: usize = std::mem::size_of::<crate::stack::Len>();
 
     #[allow(unused)]
-    const TAG_SIZE: usize = std::mem::size_of::<u8>();
+    const TAG_SIZE: usize = std::mem::size_of::<Tag>();
 
     #[allow(unused)]
-    const MAX_CAPACITY: usize =
-        std::mem::size_of::<crate::string::StdString>() - TAG_SIZE - LEN_SIZE;
+    const PAYLOAD_SIZE: usize = std::mem::size_of::<crate::string::OwnedStr>();
+    type Payload = Padding<PAYLOAD_SIZE>;
+
+    #[allow(unused)]
+    const TARGET_SIZE: usize = std::mem::size_of::<Target>();
+    type Target = crate::string::StdString;
+
+    #[allow(unused)]
+    const MAX_CAPACITY: usize = TARGET_SIZE - LEN_SIZE - TAG_SIZE;
 
     // Performance seems to slow down when trying to occupy all of the padding left by `String`'s
     // discriminant.  The question is whether faster len=1-16 "allocations" outweighs going to the heap
     // for len=17-22.
     #[allow(unused)]
-    const ALIGNED_CAPACITY: usize = std::mem::size_of::<crate::string::OwnedStr>() - LEN_SIZE;
+    const ALIGNED_CAPACITY: usize = PAYLOAD_SIZE - LEN_SIZE;
 
     #[cfg(feature = "max_inline")]
     const CAPACITY: usize = MAX_CAPACITY;
     #[cfg(not(feature = "max_inline"))]
     const CAPACITY: usize = ALIGNED_CAPACITY;
+
+    const PAYLOAD_PAD_SIZE: usize = TARGET_SIZE - PAYLOAD_SIZE - TAG_SIZE;
+    const INLINE_PAD_SIZE: usize = TARGET_SIZE - CAPACITY - LEN_SIZE - TAG_SIZE;
+
+    #[derive(Copy, Clone)]
+    #[repr(C)]
+    struct TagVariant {
+        payload: Payload,
+        pad: Padding<PAYLOAD_PAD_SIZE>,
+        tag: Tag,
+    }
+    static_assertions::assert_eq_size!(Target, TagVariant);
+
+    #[derive(Copy, Clone)]
+    #[repr(C)]
+    struct SingletonVariant {
+        payload: &'static str,
+        pad: Padding<PAYLOAD_PAD_SIZE>,
+        tag: Tag,
+    }
+    static_assertions::assert_eq_size!(Payload, &'static str);
+    static_assertions::assert_eq_size!(Target, SingletonVariant);
+
+    impl SingletonVariant {
+        #[inline]
+        const fn new(payload: &'static str) -> Self {
+            Self {
+                payload,
+                pad: Padding::new(),
+                tag: Tag::SINGLETON,
+            }
+        }
+    }
+
+    impl std::fmt::Debug for SingletonVariant {
+        #[inline]
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            self.payload.fmt(f)
+        }
+    }
+
+    #[derive(Clone)]
+    #[repr(C)]
+    struct OwnedVariant {
+        payload: OwnedStr,
+        pad: Padding<PAYLOAD_PAD_SIZE>,
+        tag: Tag,
+    }
+    static_assertions::assert_eq_size!(Payload, std::mem::ManuallyDrop<crate::string::OwnedStr>);
+    static_assertions::assert_eq_size!(Target, OwnedVariant);
+
+    impl OwnedVariant {
+        #[inline]
+        const fn new(payload: OwnedStr) -> Self {
+            Self {
+                payload,
+                pad: Padding::new(),
+                tag: Tag::OWNED,
+            }
+        }
+    }
+
+    impl std::fmt::Debug for OwnedVariant {
+        #[inline]
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            self.payload.fmt(f)
+        }
+    }
+
+    #[derive(Copy, Clone)]
+    #[repr(C)]
+    struct InlineVariant {
+        payload: StackString<CAPACITY>,
+        pad: Padding<INLINE_PAD_SIZE>,
+        tag: Tag,
+    }
+    static_assertions::assert_eq_size!(Target, InlineVariant);
+
+    impl InlineVariant {
+        #[inline]
+        const fn new(payload: StackString<CAPACITY>) -> Self {
+            Self {
+                payload,
+                pad: Padding::new(),
+                tag: Tag::INLINE,
+            }
+        }
+    }
+
+    impl std::fmt::Debug for InlineVariant {
+        #[inline]
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            self.payload.fmt(f)
+        }
+    }
+
+    #[derive(Copy, Clone, PartialEq, Eq)]
+    #[repr(transparent)]
+    struct Tag(u8);
+
+    impl Tag {
+        const SINGLETON: Tag = Tag(0);
+        const OWNED: Tag = Tag(u8::MAX);
+        const INLINE: Tag = Tag(1);
+
+        #[inline]
+        const fn is_singleton(self) -> bool {
+            self.0 == Self::SINGLETON.0
+        }
+
+        #[inline]
+        const fn is_owned(self) -> bool {
+            self.0 == Self::OWNED.0
+        }
+
+        #[inline]
+        const fn is_inline(self) -> bool {
+            !self.is_singleton() && !self.is_owned()
+        }
+    }
+
+    #[derive(Copy, Clone)]
+    #[repr(transparent)]
+    struct Padding<const L: usize>([std::mem::MaybeUninit<u8>; L]);
+
+    impl<const L: usize> Padding<L> {
+        const fn new() -> Self {
+            let padding = unsafe {
+                // SAFETY: Padding, never actually used
+                std::mem::MaybeUninit::uninit().assume_init()
+            };
+            Self(padding)
+        }
+    }
+
+    impl<const L: usize> Default for Padding<L> {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
 }
 
 #[cfg(test)]
