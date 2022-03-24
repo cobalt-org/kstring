@@ -4,13 +4,16 @@ use std::fmt;
 const TAG_SIZE: usize = std::mem::size_of::<u8>();
 
 #[allow(unused)]
-const MAX_CAPACITY: usize = std::mem::size_of::<crate::string::StdString>() - TAG_SIZE - TAG_SIZE;
+const LEN_SIZE: usize = std::mem::size_of::<u8>();
+
+#[allow(unused)]
+const MAX_CAPACITY: usize = std::mem::size_of::<crate::string::StdString>() - TAG_SIZE - LEN_SIZE;
 
 // Performance seems to slow down when trying to occupy all of the padding left by `String`'s
 // discriminant.  The question is whether faster len=1-16 "allocations" outweighs going to the heap
 // for len=17-22.
 #[allow(unused)]
-const ALIGNED_CAPACITY: usize = std::mem::size_of::<crate::string::OwnedStr>() - TAG_SIZE;
+const ALIGNED_CAPACITY: usize = std::mem::size_of::<crate::string::OwnedStr>() - LEN_SIZE;
 
 #[cfg(feature = "max_inline")]
 pub(crate) const CAPACITY: usize = MAX_CAPACITY;
