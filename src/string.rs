@@ -45,7 +45,11 @@ impl KString {
     #[inline]
     pub fn from_string(other: StdString) -> Self {
         let inner = if (0..=CAPACITY).contains(&other.len()) {
-            KStringInner::Inline(InlineString::new(other.as_str()))
+            let inline = unsafe {
+                // SAFETY: range check ensured this is always safe
+                InlineString::new_unchecked(other.as_str())
+            };
+            KStringInner::Inline(inline)
         } else {
             #[allow(clippy::useless_conversion)]
             KStringInner::Owned(OwnedStr::from(other.into_boxed_str()))
@@ -57,7 +61,11 @@ impl KString {
     #[inline]
     pub fn from_ref(other: &str) -> Self {
         let inner = if (0..=CAPACITY).contains(&other.len()) {
-            KStringInner::Inline(InlineString::new(other))
+            let inline = unsafe {
+                // SAFETY: range check ensured this is always safe
+                InlineString::new_unchecked(other)
+            };
+            KStringInner::Inline(inline)
         } else {
             #[allow(clippy::useless_conversion)]
             KStringInner::Owned(OwnedStr::from(other))
