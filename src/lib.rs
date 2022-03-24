@@ -17,15 +17,15 @@
 //!   allocating for struct field names.
 //! - Use `Box<str>` rather than `String` to use less memory.
 
-mod cow;
-mod r#ref;
 mod stack;
 mod string;
+mod string_cow;
+mod string_ref;
 
-pub use cow::*;
-pub use r#ref::*;
 pub use stack::StackString;
 pub use string::*;
+pub use string_cow::*;
+pub use string_ref::*;
 
 #[cfg(test)]
 mod test {
