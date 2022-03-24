@@ -512,23 +512,20 @@ mod inner {
     impl Clone for KStringInner {
         fn clone(&self) -> Self {
             let tag = self.tag();
-            unsafe {
-                // SAFETY: `tag` ensures access to correct variant
-                if tag.is_singleton() {
-                    Self {
-                        singleton: self.singleton,
-                    }
-                } else if tag.is_owned() {
+            if tag.is_owned() {
+                unsafe {
+                    // SAFETY: `tag` ensures access to correct variant
                     Self {
                         owned: std::mem::ManuallyDrop::new(OwnedVariant::new(
                             self.owned.payload.clone(),
                         )),
                     }
-                } else {
-                    debug_assert!(tag.is_inline());
-                    Self {
-                        inline: self.inline,
-                    }
+                }
+            } else {
+                unsafe {
+                    // SAFETY: `tag` ensures access to correct variant
+                    // SAFETY: non-owned types are copyable
+                    std::mem::transmute_copy(self)
                 }
             }
         }
