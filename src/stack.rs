@@ -1,25 +1,6 @@
 use std::fmt;
 
-#[allow(unused)]
-const TAG_SIZE: usize = std::mem::size_of::<u8>();
-
-type Len = u8;
-#[allow(unused)]
-const LEN_SIZE: usize = std::mem::size_of::<Len>();
-
-#[allow(unused)]
-const MAX_CAPACITY: usize = std::mem::size_of::<crate::string::StdString>() - TAG_SIZE - LEN_SIZE;
-
-// Performance seems to slow down when trying to occupy all of the padding left by `String`'s
-// discriminant.  The question is whether faster len=1-16 "allocations" outweighs going to the heap
-// for len=17-22.
-#[allow(unused)]
-const ALIGNED_CAPACITY: usize = std::mem::size_of::<crate::string::OwnedStr>() - LEN_SIZE;
-
-#[cfg(feature = "max_inline")]
-pub(crate) const CAPACITY: usize = MAX_CAPACITY;
-#[cfg(not(feature = "max_inline"))]
-pub(crate) const CAPACITY: usize = ALIGNED_CAPACITY;
+pub(crate) type Len = u8;
 
 #[derive(Copy, Clone)]
 pub struct StackString<const C: usize> {
@@ -256,18 +237,5 @@ impl<const C: usize> StrBuffer<C> {
 impl<const C: usize> Default for StrBuffer<C> {
     fn default() -> Self {
         Self::empty()
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn test_size() {
-        println!(
-            "StackString: {}",
-            std::mem::size_of::<StackString<CAPACITY>>()
-        );
     }
 }

@@ -1,6 +1,6 @@
 use std::{borrow::Cow, fmt};
 
-use crate::stack::*;
+use crate::stack::StackString;
 use crate::KStringCow;
 use crate::KStringRef;
 
@@ -455,6 +455,27 @@ mod inner {
             }
         }
     }
+
+    #[allow(unused)]
+    const LEN_SIZE: usize = std::mem::size_of::<crate::stack::Len>();
+
+    #[allow(unused)]
+    const TAG_SIZE: usize = std::mem::size_of::<u8>();
+
+    #[allow(unused)]
+    const MAX_CAPACITY: usize =
+        std::mem::size_of::<crate::string::StdString>() - TAG_SIZE - LEN_SIZE;
+
+    // Performance seems to slow down when trying to occupy all of the padding left by `String`'s
+    // discriminant.  The question is whether faster len=1-16 "allocations" outweighs going to the heap
+    // for len=17-22.
+    #[allow(unused)]
+    const ALIGNED_CAPACITY: usize = std::mem::size_of::<crate::string::OwnedStr>() - LEN_SIZE;
+
+    #[cfg(feature = "max_inline")]
+    const CAPACITY: usize = MAX_CAPACITY;
+    #[cfg(not(feature = "max_inline"))]
+    const CAPACITY: usize = ALIGNED_CAPACITY;
 }
 
 #[cfg(test)]
