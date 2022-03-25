@@ -28,8 +28,36 @@ jobs:
     name: Test
     strategy:
       matrix:
-        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        rust: ["stable"]
+        target:
+          - i686-pc-windows-msvc
+          - x86_64-pc-windows-msvc
+          - i686-pc-windows-gnu
+          - x86_64-pc-windows-gnu
+          - x86_64-unknown-linux-gnu
+          - i686-unknown-linux-gnu
+          - x86_64-apple-darwin
+        include:
+          - target: i686-pc-windows-msvc
+            os: windows-latest
+            rust: stable
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            rust: stable
+          - target: i686-pc-windows-gnu
+            os: windows-latest
+            rust: stable
+          - target: x86_64-pc-windows-gnu
+            os: windows-latest
+            rust: stable
+          - target: x86_64-unknown-linux-gnu
+            os: linux-latest
+            rust: stable
+          - target: i686-unknown-linux-gnu
+            os: linux-latest
+            rust: stable
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            rust: stable
     continue-on-error: ${{ matrix.rust != 'stable' }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -39,17 +67,31 @@ jobs:
       uses: actions-rs/toolchain@v1
       with:
         toolchain: ${{ matrix.rust }}
+        target: ${{ matrix.target }}
         profile: minimal
         override: true
+    - name: Install linker
+      if: matrix.target == 'i686-pc-windows-gnu'
+      uses: egor-tensin/setup-mingw@v2
+      with:
+        platform: x86
+    - name: Install linker
+      if: matrix.target == 'x86_64-pc-windows-gnu'
+      uses: egor-tensin/setup-mingw@v2
+    - name: Install linker
+      if: matrix.target == 'i686-unknown-linux-gnu'
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-multilib
     - uses: Swatinem/rust-cache@v1
     - name: Build
-      run: cargo test --no-run --workspace --all-features
+      run: cargo test --target ${{ matrix.target }} --workspace --no-run --all-features
     - name: Default features
-      run: cargo test --workspace
+      run: cargo test --target ${{ matrix.target }} --workspace
     - name: All features
-      run: cargo test --workspace --all-features
+      run: cargo test --target ${{ matrix.target }} --workspace --all-features
     - name: No-default features
-      run: cargo test --workspace --no-default-features
+      run: cargo test --target ${{ matrix.target }} --workspace --no-default-features
   msrv:
     name: "Check MSRV: 1.54.0"
     runs-on: ubuntu-latest
