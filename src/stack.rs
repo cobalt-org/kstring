@@ -78,12 +78,6 @@ impl<const C: usize> StackString<C> {
             self.len = new_len as u8;
         }
     }
-
-    #[inline]
-    #[allow(clippy::wrong_self_convention)]
-    pub(crate) fn to_boxed_str(&self) -> Box<str> {
-        Box::from(self.as_str())
-    }
 }
 
 impl<const C: usize> Default for StackString<C> {

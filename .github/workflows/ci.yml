@@ -50,10 +50,10 @@ jobs:
             os: windows-latest
             rust: stable
           - target: x86_64-unknown-linux-gnu
-            os: linux-latest
+            os: ubuntu-latest
             rust: stable
           - target: i686-unknown-linux-gnu
-            os: linux-latest
+            os: ubuntu-latest
             rust: stable
           - target: x86_64-apple-darwin
             os: macos-latest
@@ -93,7 +93,7 @@ jobs:
     - name: No-default features
       run: cargo test --target ${{ matrix.target }} --workspace --no-default-features
   msrv:
-    name: "Check MSRV: 1.54.0"
+    name: "Check MSRV: 1.59.0"
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
@@ -101,7 +101,7 @@ jobs:
     - name: Install Rust
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: 1.54.0  # MSRV
+        toolchain: 1.59.0  # MSRV
         profile: minimal
         override: true
     - uses: Swatinem/rust-cache@v1
@@ -155,7 +155,7 @@ jobs:
     - name: Install Rust
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: 1.54.0  # MSRV
+        toolchain: 1.59.0  # MSRV
         profile: minimal
         override: true
         components: clippy
