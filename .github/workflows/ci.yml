@@ -19,7 +19,7 @@ on:
 jobs:
   ci:
     name: CI
-    needs: [test, msrv, docs, rustfmt, clippy]
+    needs: [test, miri, msrv, docs, rustfmt, clippy]
     runs-on: ubuntu-latest
     steps:
       - name: Done
@@ -92,6 +92,28 @@ jobs:
       run: cargo test --target ${{ matrix.target }} --workspace --all-features
     - name: No-default features
       run: cargo test --target ${{ matrix.target }} --workspace --no-default-features
+  miri:
+    name: Miri
+    runs-on: ubuntu-latest
+    env:
+      MIRIFLAGS: -Zmiri-tag-raw-pointers
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        profile: minimal
+        override: true
+        components: miri
+    - uses: Swatinem/rust-cache@v1
+    - name: Default features
+      run: cargo miri test
+    - name: All features
+      run: cargo miri test --all-features
+    - name: No-default features
+      run: cargo miri test --no-default-features
   msrv:
     name: "Check MSRV: 1.59.0"
     runs-on: ubuntu-latest
