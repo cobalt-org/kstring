@@ -20,7 +20,8 @@ impl<const C: usize> StackString<C> {
     }
 
     #[inline]
-    pub fn try_new(s: &str) -> Option<Self> {
+    pub fn try_new(s: impl AsRef<str>) -> Option<Self> {
+        let s = s.as_ref();
         let len = s.as_bytes().len();
         if len <= Self::CAPACITY {
             let stack = unsafe {
@@ -37,7 +38,8 @@ impl<const C: usize> StackString<C> {
     ///
     /// Calling this function with a string larger than `Self::CAPACITY` is undefined behavior.
     #[inline]
-    pub unsafe fn new_unchecked(s: &str) -> Self {
+    pub unsafe fn new_unchecked(s: impl AsRef<str>) -> Self {
+        let s = s.as_ref();
         let len = s.as_bytes().len() as u8;
         debug_assert!(Self::CAPACITY <= Len::MAX.into());
         let buffer = StrBuffer::new_unchecked(s);

@@ -57,6 +57,12 @@ impl KString {
         }
     }
 
+    /// Create an inline string, if possible
+    #[inline]
+    pub fn try_inline(other: impl AsRef<str>) -> Option<Self> {
+        KStringInner::try_inline(other).map(|inner| Self { inner })
+    }
+
     /// Get a reference to the `KString`.
     #[inline]
     pub fn as_ref(&self) -> KStringRef<'_> {
@@ -398,6 +404,11 @@ mod inner {
         #[inline]
         pub fn from_static(other: &'static str) -> Self {
             Self::Singleton(other)
+        }
+
+        #[inline]
+        pub fn try_inline(other: impl AsRef<str>) -> Option<Self> {
+            StackString::try_new(other).map(Self::Inline)
         }
 
         #[inline]
