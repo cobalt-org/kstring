@@ -1,6 +1,6 @@
 use std::{borrow::Cow, fmt};
 
-use crate::inline::*;
+use crate::stack::StackString;
 use crate::KStringCow;
 use crate::KStringRef;
 
@@ -15,14 +15,7 @@ pub(crate) type OwnedStr = Box<str>;
 #[derive(Clone)]
 #[repr(transparent)]
 pub struct KString {
-    pub(crate) inner: KStringInner,
-}
-
-#[derive(Debug)]
-pub(crate) enum KStringInner {
-    Singleton(&'static str),
-    Inline(InlineString),
-    Owned(OwnedStr),
+    inner: KStringInner,
 }
 
 impl KString {
@@ -35,41 +28,32 @@ impl KString {
     /// Create an owned `KString`.
     #[inline]
     pub fn from_boxed(other: BoxedStr) -> Self {
-        #[allow(clippy::useless_conversion)]
         Self {
-            inner: KStringInner::Owned(OwnedStr::from(other)),
+            inner: KStringInner::from_boxed(other),
         }
     }
 
     /// Create an owned `KString`.
     #[inline]
     pub fn from_string(other: StdString) -> Self {
-        let inner = if (0..=CAPACITY).contains(&other.len()) {
-            KStringInner::Inline(InlineString::new(other.as_str()))
-        } else {
-            #[allow(clippy::useless_conversion)]
-            KStringInner::Owned(OwnedStr::from(other.into_boxed_str()))
-        };
-        Self { inner }
+        Self {
+            inner: KStringInner::from_string(other),
+        }
     }
 
     /// Create an owned `KString` optimally from a reference.
     #[inline]
     pub fn from_ref(other: &str) -> Self {
-        let inner = if (0..=CAPACITY).contains(&other.len()) {
-            KStringInner::Inline(InlineString::new(other))
-        } else {
-            #[allow(clippy::useless_conversion)]
-            KStringInner::Owned(OwnedStr::from(other))
-        };
-        Self { inner }
+        Self {
+            inner: KStringInner::from_ref(other),
+        }
     }
 
     /// Create a reference to a `'static` data.
     #[inline]
     pub fn from_static(other: &'static str) -> Self {
         Self {
-            inner: KStringInner::Singleton(other),
+            inner: KStringInner::from_static(other),
         }
     }
 
@@ -101,63 +85,6 @@ impl KString {
     #[inline]
     pub fn into_cow_str(self) -> Cow<'static, str> {
         self.inner.into_cow_str()
-    }
-}
-
-impl KStringInner {
-    #[inline]
-    fn as_ref(&self) -> KStringRef<'_> {
-        match self {
-            Self::Singleton(s) => KStringRef::from_static(s),
-            Self::Inline(s) => KStringRef::from_ref(s.as_str()),
-            Self::Owned(s) => KStringRef::from_ref(s),
-        }
-    }
-
-    #[inline]
-    fn as_str(&self) -> &str {
-        match self {
-            Self::Singleton(s) => s,
-            Self::Inline(s) => s.as_str(),
-            Self::Owned(s) => s,
-        }
-    }
-
-    #[inline]
-    fn into_boxed_str(self) -> BoxedStr {
-        match self {
-            Self::Singleton(s) => BoxedStr::from(s),
-            Self::Inline(s) => s.to_boxed_str(),
-            Self::Owned(s) => BoxedStr::from(s.as_ref()),
-        }
-    }
-
-    /// Convert to a Cow str
-    #[inline]
-    fn into_cow_str(self) -> Cow<'static, str> {
-        match self {
-            Self::Singleton(s) => Cow::Borrowed(s),
-            Self::Inline(s) => Cow::Owned(s.to_boxed_str().into()),
-            Self::Owned(s) => Cow::Owned(s.as_ref().into()),
-        }
-    }
-}
-
-// Explicit to avoid inlining which cuts clone times in half.
-//
-// An automatically derived `clone()` has 10ns overhead while the explicit `Deref`/`as_str` has
-// none of that.  Being explicit and removing the `#[inline]` attribute dropped the overhead to
-// 5ns.
-//
-// My only guess is that the `clone()` calls we delegate to are just that much bigger than
-// `as_str()` that, when combined with a jump table, is blowing the icache, slowing things down.
-impl Clone for KStringInner {
-    fn clone(&self) -> Self {
-        match self {
-            Self::Singleton(s) => Self::Singleton(s),
-            Self::Inline(s) => Self::Inline(*s),
-            Self::Owned(s) => Self::Owned(s.clone()),
-        }
     }
 }
 
@@ -224,7 +151,7 @@ impl std::hash::Hash for KString {
 impl fmt::Debug for KString {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::Debug::fmt(&self.inner, f)
+        self.as_str().fmt(f)
     }
 }
 
@@ -419,6 +346,136 @@ impl<'de> serde::de::Visitor<'de> for StringVisitor {
             )),
         }
     }
+}
+
+use inner::KStringInner;
+
+mod inner {
+    use super::*;
+
+    pub(super) enum KStringInner {
+        Singleton(&'static str),
+        Inline(StackString<CAPACITY>),
+        Owned(OwnedStr),
+    }
+
+    impl KStringInner {
+        #[inline]
+        pub(super) fn from_boxed(other: BoxedStr) -> Self {
+            #[allow(clippy::useless_conversion)]
+            Self::Owned(OwnedStr::from(other))
+        }
+
+        #[inline]
+        pub(super) fn from_string(other: StdString) -> Self {
+            if (0..=CAPACITY).contains(&other.len()) {
+                let inline = unsafe {
+                    // SAFETY: range check ensured this is always safe
+                    StackString::new_unchecked(other.as_str())
+                };
+                Self::Inline(inline)
+            } else {
+                #[allow(clippy::useless_conversion)]
+                Self::Owned(OwnedStr::from(other.into_boxed_str()))
+            }
+        }
+
+        #[inline]
+        pub(super) fn from_ref(other: &str) -> Self {
+            if (0..=CAPACITY).contains(&other.len()) {
+                let inline = unsafe {
+                    // SAFETY: range check ensured this is always safe
+                    StackString::new_unchecked(other)
+                };
+                Self::Inline(inline)
+            } else {
+                #[allow(clippy::useless_conversion)]
+                Self::Owned(OwnedStr::from(other))
+            }
+        }
+
+        /// Create a reference to a `'static` data.
+        #[inline]
+        pub fn from_static(other: &'static str) -> Self {
+            Self::Singleton(other)
+        }
+
+        #[inline]
+        pub(super) fn as_ref(&self) -> KStringRef<'_> {
+            match self {
+                Self::Singleton(s) => KStringRef::from_static(s),
+                Self::Inline(s) => KStringRef::from_ref(s.as_str()),
+                Self::Owned(s) => KStringRef::from_ref(s),
+            }
+        }
+
+        #[inline]
+        pub(super) fn as_str(&self) -> &str {
+            match self {
+                Self::Singleton(s) => s,
+                Self::Inline(s) => s.as_str(),
+                Self::Owned(s) => s,
+            }
+        }
+
+        #[inline]
+        pub(super) fn into_boxed_str(self) -> BoxedStr {
+            match self {
+                Self::Singleton(s) => BoxedStr::from(s),
+                Self::Inline(s) => s.to_boxed_str(),
+                Self::Owned(s) => BoxedStr::from(s.as_ref()),
+            }
+        }
+
+        /// Convert to a Cow str
+        #[inline]
+        pub(super) fn into_cow_str(self) -> Cow<'static, str> {
+            match self {
+                Self::Singleton(s) => Cow::Borrowed(s),
+                Self::Inline(s) => Cow::Owned(s.to_boxed_str().into()),
+                Self::Owned(s) => Cow::Owned(s.as_ref().into()),
+            }
+        }
+    }
+
+    // Explicit to avoid inlining which cuts clone times in half.
+    //
+    // An automatically derived `clone()` has 10ns overhead while the explicit `Deref`/`as_str` has
+    // none of that.  Being explicit and removing the `#[inline]` attribute dropped the overhead to
+    // 5ns.
+    //
+    // My only guess is that the `clone()` calls we delegate to are just that much bigger than
+    // `as_str()` that, when combined with a jump table, is blowing the icache, slowing things down.
+    impl Clone for KStringInner {
+        fn clone(&self) -> Self {
+            match self {
+                Self::Singleton(s) => Self::Singleton(s),
+                Self::Inline(s) => Self::Inline(*s),
+                Self::Owned(s) => Self::Owned(s.clone()),
+            }
+        }
+    }
+
+    #[allow(unused)]
+    const LEN_SIZE: usize = std::mem::size_of::<crate::stack::Len>();
+
+    #[allow(unused)]
+    const TAG_SIZE: usize = std::mem::size_of::<u8>();
+
+    #[allow(unused)]
+    const MAX_CAPACITY: usize =
+        std::mem::size_of::<crate::string::StdString>() - TAG_SIZE - LEN_SIZE;
+
+    // Performance seems to slow down when trying to occupy all of the padding left by `String`'s
+    // discriminant.  The question is whether faster len=1-16 "allocations" outweighs going to the heap
+    // for len=17-22.
+    #[allow(unused)]
+    const ALIGNED_CAPACITY: usize = std::mem::size_of::<crate::string::OwnedStr>() - LEN_SIZE;
+
+    #[cfg(feature = "max_inline")]
+    const CAPACITY: usize = MAX_CAPACITY;
+    #[cfg(not(feature = "max_inline"))]
+    const CAPACITY: usize = ALIGNED_CAPACITY;
 }
 
 #[cfg(test)]

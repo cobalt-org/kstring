@@ -10,20 +10,21 @@ type StringCow<'s> = std::borrow::Cow<'s, str>;
 
 #[cfg(not(feature = "bench_subset_unstable"))]
 pub static FIXTURES: &[&str] = &[
+    // Empty handling
     "",
-    "0",
-    "01",
-    "012",
-    "0123",
-    "01234",
-    "012345",
-    "0123456",
-    "01234567",
-    "012345678",
-    "0123456789",
-    "01234567890123456789",
-    "0123456789012345678901234567890123456789",
-    "01234567890123456789012345678901234567890123456789012345678901234567890123456789",
+    // Barely used
+    "1",
+    // kstring's max small-string size
+    "123456789012345",
+    // Boundary conditions for most small-string optimizations
+    "1234567890123456789012",
+    "12345678901234567890123",
+    "123456789012345678901234",
+    "1234567890123456789012345",
+    // Small heap
+    "1234567890123456789012345678901234567890123456789012345678901234",
+    // Large heap
+    "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
 ];
 
 #[cfg(feature = "bench_subset_unstable")]
@@ -37,29 +38,6 @@ fn bench_clone(c: &mut Criterion) {
     for fixture in FIXTURES {
         let len = fixture.len();
         group.throughput(Throughput::Bytes(len as u64));
-        #[cfg(not(feature = "bench_subset_unstable"))]
-        group.bench_with_input(BenchmarkId::new("&'static str", len), &len, |b, _| {
-            let uut = *fixture;
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.clone())
-        });
-        #[cfg(not(feature = "bench_subset_unstable"))]
-        group.bench_with_input(BenchmarkId::new("String", len), &len, |b, _| {
-            let uut = String::from(*fixture);
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.clone())
-        });
-        group.bench_with_input(BenchmarkId::new("Box<str>", len), &len, |b, _| {
-            let uut = Box::<str>::from(*fixture);
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.clone())
-        });
-        #[cfg(not(feature = "bench_subset_unstable"))]
-        group.bench_with_input(BenchmarkId::new("Arc<str>", len), &len, |b, _| {
-            let uut = std::sync::Arc::<str>::from(*fixture);
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.clone())
-        });
         group.bench_with_input(
             BenchmarkId::new("StringCow::Borrowed", len),
             &len,
@@ -72,24 +50,6 @@ fn bench_clone(c: &mut Criterion) {
         group.bench_with_input(BenchmarkId::new("StringCow::Owned", len), &len, |b, _| {
             let fixture = String::from(*fixture);
             let uut = StringCow::Owned(fixture);
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.clone())
-        });
-        #[cfg(not(feature = "bench_subset_unstable"))]
-        group.bench_with_input(BenchmarkId::new("SmolStr::new", len), &len, |b, _| {
-            let uut = smol_str::SmolStr::new(fixture);
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.clone())
-        });
-        #[cfg(not(feature = "bench_subset_unstable"))]
-        group.bench_with_input(BenchmarkId::new("SmolStr::new", len), &len, |b, _| {
-            let uut = compact_str::CompactStr::new(fixture);
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.clone())
-        });
-        #[cfg(not(feature = "bench_subset_unstable"))]
-        group.bench_with_input(BenchmarkId::new("SmolStr::new", len), &len, |b, _| {
-            let uut = smartstring::alias::String::from(*fixture);
             let uut = criterion::black_box(uut);
             b.iter(|| uut.clone())
         });
