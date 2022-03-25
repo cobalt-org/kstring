@@ -70,12 +70,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "compact_str"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ccb5da19aae02464e202b4133c3d9dbab35e3b383600736f9041642d2423de9"
-
-[[package]]
 name = "criterion"
 version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -232,11 +226,8 @@ dependencies = [
 name = "kstring"
 version = "1.0.6"
 dependencies = [
- "compact_str",
  "criterion",
  "serde",
- "smartstring",
- "smol_str",
  "static_assertions",
 ]
 
@@ -464,24 +455,6 @@ checksum = "8e8d9fa5c3b304765ce1fd9c4c8a3de2c8db365a5b91be52f186efc675681d95"
 dependencies = [
  "itoa 1.0.1",
  "ryu",
- "serde",
-]
-
-[[package]]
-name = "smartstring"
-version = "0.2.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31aa6a31c0c2b21327ce875f7e8952322acfcfd0c27569a6e18a647281352c9b"
-dependencies = [
- "static_assertions",
-]
-
-[[package]]
-name = "smol_str"
-version = "0.1.21"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61d15c83e300cce35b7c8cd39ff567c1ef42dde6d4a1a38dbdbf9a59902261bd"
-dependencies = [
  "serde",
 ]
 

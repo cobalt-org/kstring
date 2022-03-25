@@ -39,29 +39,6 @@ fn bench_access(c: &mut Criterion) {
     for fixture in FIXTURES {
         let len = fixture.len();
         group.throughput(Throughput::Bytes(len as u64));
-        #[cfg(not(feature = "bench_subset_unstable"))]
-        group.bench_with_input(BenchmarkId::new("&'static str", len), &len, |b, _| {
-            let uut = *fixture;
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.is_empty())
-        });
-        #[cfg(not(feature = "bench_subset_unstable"))]
-        group.bench_with_input(BenchmarkId::new("String", len), &len, |b, _| {
-            let uut = String::from(*fixture);
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.is_empty())
-        });
-        group.bench_with_input(BenchmarkId::new("Box<str>", len), &len, |b, _| {
-            let uut = Box::<str>::from(*fixture);
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.is_empty())
-        });
-        #[cfg(not(feature = "bench_subset_unstable"))]
-        group.bench_with_input(BenchmarkId::new("Arc<str>", len), &len, |b, _| {
-            let uut = std::sync::Arc::<str>::from(*fixture);
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.is_empty())
-        });
         group.bench_with_input(
             BenchmarkId::new("StringCow::Borrowed", len),
             &len,
@@ -73,24 +50,6 @@ fn bench_access(c: &mut Criterion) {
         );
         group.bench_with_input(BenchmarkId::new("StringCow::Owned", len), &len, |b, _| {
             let uut = StringCow::Owned(String::from(*fixture));
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.is_empty())
-        });
-        #[cfg(not(feature = "bench_subset_unstable"))]
-        group.bench_with_input(BenchmarkId::new("SmolStr", len), &len, |b, _| {
-            let uut = smol_str::SmolStr::new(fixture);
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.is_empty())
-        });
-        #[cfg(not(feature = "bench_subset_unstable"))]
-        group.bench_with_input(BenchmarkId::new("CompactStr", len), &len, |b, _| {
-            let uut = compact_str::CompactStr::new(fixture);
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.is_empty())
-        });
-        #[cfg(not(feature = "bench_subset_unstable"))]
-        group.bench_with_input(BenchmarkId::new("smartstring", len), &len, |b, _| {
-            let uut = smartstring::alias::String::from(*fixture);
             let uut = criterion::black_box(uut);
             b.iter(|| uut.is_empty())
         });
