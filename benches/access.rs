@@ -8,7 +8,7 @@ use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Through
 
 type StringCow<'s> = std::borrow::Cow<'s, str>;
 
-#[cfg(not(feature = "bench_subset_unstable"))]
+#[cfg(not(feature = "unstable_bench_subset"))]
 pub static FIXTURES: &[&str] = &[
     "",
     "0",
@@ -26,7 +26,7 @@ pub static FIXTURES: &[&str] = &[
     "01234567890123456789012345678901234567890123456789012345678901234567890123456789",
 ];
 
-#[cfg(feature = "bench_subset_unstable")]
+#[cfg(feature = "unstable_bench_subset")]
 pub static FIXTURES: &[&str] = &[
     "0123456789",
     "01234567890123456789012345678901234567890123456789012345678901234567890123456789",
@@ -76,7 +76,7 @@ fn bench_access(c: &mut Criterion) {
                 b.iter(|| uut.is_empty())
             },
         );
-        #[cfg(not(feature = "bench_subset_unstable"))]
+        #[cfg(not(feature = "unstable_bench_subset"))]
         group.bench_with_input(
             BenchmarkId::new("KStringCow::from_static", len),
             &len,
@@ -86,7 +86,7 @@ fn bench_access(c: &mut Criterion) {
                 b.iter(|| uut.is_empty())
             },
         );
-        #[cfg(not(feature = "bench_subset_unstable"))]
+        #[cfg(not(feature = "unstable_bench_subset"))]
         group.bench_with_input(
             BenchmarkId::new("KStringCow::from_ref", len),
             &len,
@@ -96,7 +96,7 @@ fn bench_access(c: &mut Criterion) {
                 b.iter(|| uut.is_empty())
             },
         );
-        #[cfg(not(feature = "bench_subset_unstable"))]
+        #[cfg(not(feature = "unstable_bench_subset"))]
         group.bench_with_input(
             BenchmarkId::new("KStringCow::from_string", len),
             &len,
@@ -106,7 +106,7 @@ fn bench_access(c: &mut Criterion) {
                 b.iter(|| uut.is_empty())
             },
         );
-        #[cfg(not(feature = "bench_subset_unstable"))]
+        #[cfg(not(feature = "unstable_bench_subset"))]
         group.bench_with_input(
             BenchmarkId::new("KStringRef::from_static", len),
             &len,
@@ -116,7 +116,7 @@ fn bench_access(c: &mut Criterion) {
                 b.iter(|| uut.is_empty())
             },
         );
-        #[cfg(not(feature = "bench_subset_unstable"))]
+        #[cfg(not(feature = "unstable_bench_subset"))]
         group.bench_with_input(
             BenchmarkId::new("KStringRef::from_ref", len),
             &len,
