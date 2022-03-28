@@ -32,12 +32,14 @@ pre-release-replacements = [
 ]
 
 [features]
-default = ["serde"]
+default = ["unsafe", "serde"]
 
 ## O(1) clone support
 arc = []
 ## Inline (stack) strings use the full width of `KString`s
 max_inline = []
+## Allow unsafe code
+unsafe = []
 
 unstable_bench_subset = []
 

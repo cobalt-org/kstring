@@ -37,14 +37,42 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     pub fn try_new(s: &str) -> Option<Self> {
         let len = s.as_bytes().len();
         if len <= Self::CAPACITY {
-            let stack = unsafe {
-                // SAFETY: We've confirmed `len` is within size
-                Self::new_unchecked(s)
+            #[cfg(feature = "unsafe")]
+            let stack = {
+                unsafe {
+                    // SAFETY: We've confirmed `len` is within size
+                    Self::new_unchecked(s)
+                }
             };
+            #[cfg(not(feature = "unsafe"))]
+            let stack = { Self::new(s) };
             Some(stack)
         } else {
             None
         }
+    }
+
+    /// Create a `StackString` from a `&str`
+    ///
+    /// # Panic
+    ///
+    /// Calling this function with a string larger than `Self::CAPACITY` will panic
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let s = kstring::StackString::<3>::new("foo");
+    /// assert_eq!(s, "foo");
+    /// ```
+    #[inline]
+    #[must_use]
+    pub fn new(s: &str) -> Self {
+        let len = s.as_bytes().len() as u8;
+        debug_assert!(Self::CAPACITY <= Len::MAX.into());
+        let buffer = StrBuffer::new(s);
+        Self { len, buffer }
     }
 
     /// Create a `StackString` from a `&str`
@@ -66,6 +94,7 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     /// ```
     #[inline]
     #[must_use]
+    #[cfg(feature = "unsafe")]
     pub unsafe fn new_unchecked(s: &str) -> Self {
         let len = s.as_bytes().len() as u8;
         debug_assert!(Self::CAPACITY <= Len::MAX.into());
@@ -88,11 +117,14 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     #[must_use]
     pub fn as_str(&self) -> &str {
         let len = self.len as usize;
+        #[cfg(feature = "unsafe")]
         unsafe {
             // SAFETY: Constructors guarantee that `buffer[..len]` is a `str`,
             // and we don't mutate the data afterwards.
-            self.buffer.as_str(len)
+            self.buffer.as_str_unchecked(len)
         }
+        #[cfg(not(feature = "unsafe"))]
+        self.buffer.as_str(len)
     }
 
     /// Converts a `StackString` into a mutable string slice.
@@ -113,11 +145,14 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     #[must_use]
     pub fn as_mut_str(&mut self) -> &mut str {
         let len = self.len as usize;
+        #[cfg(feature = "unsafe")]
         unsafe {
             // SAFETY: Constructors guarantee that `buffer[..len]` is a `str`,
             // and we don't mutate the data afterwards.
-            self.buffer.as_mut_str(len)
+            self.buffer.as_mut_str_unchecked(len)
         }
+        #[cfg(not(feature = "unsafe"))]
+        self.buffer.as_mut_str(len)
     }
 
     /// Returns the length of this `StasckString`, in bytes, not [`char`]s or
@@ -359,6 +394,36 @@ impl<const CAPACITY: usize> StrBuffer<CAPACITY> {
     }
 
     #[inline]
+    pub(crate) fn new(s: &str) -> Self {
+        let len = s.as_bytes().len();
+        debug_assert!(len <= CAPACITY);
+        let mut buffer = Self::default();
+        if let Some(buffer) = buffer.0.get_mut(..len) {
+            buffer.copy_from_slice(s.as_bytes());
+        } else {
+            panic!("`{}` is larger than capacity {}", s, CAPACITY);
+        }
+        buffer
+    }
+
+    #[inline]
+    #[cfg(not(feature = "unsafe"))]
+    pub(crate) fn as_str(&self, len: usize) -> &str {
+        let slice = self.0.get(..len).unwrap();
+        std::str::from_utf8(slice).unwrap()
+    }
+
+    #[inline]
+    #[cfg(not(feature = "unsafe"))]
+    pub(crate) fn as_mut_str(&mut self, len: usize) -> &mut str {
+        let slice = self.0.get_mut(..len).unwrap();
+        std::str::from_utf8_mut(slice).unwrap()
+    }
+}
+
+impl<const CAPACITY: usize> StrBuffer<CAPACITY> {
+    #[inline]
+    #[cfg(feature = "unsafe")]
     pub(crate) unsafe fn new_unchecked(s: &str) -> Self {
         let len = s.as_bytes().len();
         debug_assert!(len <= CAPACITY);
@@ -371,13 +436,15 @@ impl<const CAPACITY: usize> StrBuffer<CAPACITY> {
     }
 
     #[inline]
-    pub(crate) unsafe fn as_str(&self, len: usize) -> &str {
+    #[cfg(feature = "unsafe")]
+    pub(crate) unsafe fn as_str_unchecked(&self, len: usize) -> &str {
         let slice = self.0.get_unchecked(..len);
         std::str::from_utf8_unchecked(slice)
     }
 
     #[inline]
-    pub(crate) unsafe fn as_mut_str(&mut self, len: usize) -> &mut str {
+    #[cfg(feature = "unsafe")]
+    pub(crate) unsafe fn as_mut_str_unchecked(&mut self, len: usize) -> &mut str {
         let slice = self.0.get_unchecked_mut(..len);
         std::str::from_utf8_unchecked_mut(slice)
     }

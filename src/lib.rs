@@ -20,6 +20,7 @@
 //! # Feature Flags
 //!
 #![cfg_attr(feature = "document-features", doc = document_features::document_features!())]
+#![cfg_attr(feature = "safe", forbid(unsafe_code))]
 
 mod stack;
 mod string;
