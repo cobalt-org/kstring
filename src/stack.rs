@@ -141,6 +141,25 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
         self.len as usize
     }
 
+    /// Returns `true` if this `StackString` has a length of zero, and `false` otherwise.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let mut v = kstring::StackString::<20>::EMPTY;
+    /// assert!(v.is_empty());
+    ///
+    /// let a = kstring::StackString::<3>::try_new("foo").unwrap();
+    /// assert!(!a.is_empty());
+    /// ```
+    #[inline]
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     /// Truncates this `StackString`, removing all contents.
     ///
     /// # Examples
