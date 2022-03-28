@@ -16,6 +16,10 @@
 //!   references (`KStringRef`), and lifetime abstractions (`KStringCow`) to avoid
 //!   allocating for struct field names.
 //! - Use `Box<str>` rather than `String` to use less memory.
+//!
+//! # Feature Flags
+//!
+#![cfg_attr(feature = "document-features", doc = document_features::document_features!())]
 
 mod stack;
 mod string;

@@ -193,6 +193,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "document-features"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b01c09fd63b5136fba41aa625c7b3254f0aa0a435ff6ec4b2c9a28d496c83c88"
+
+[[package]]
 name = "either"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -283,6 +289,7 @@ name = "kstring"
 version = "1.0.6"
 dependencies = [
  "criterion",
+ "document-features",
  "proptest",
  "serde",
  "static_assertions",
