@@ -11,10 +11,12 @@ categories = ["data-structures", "text-processing"]
 keywords = ["serde", "serialization", "string"]
 edition = "2018"
 include = [
+  "build.rs",
   "src/**/*",
   "Cargo.toml",
   "LICENSE*",
   "README.md",
+  "benches/**/*",
   "examples/**/*"
 ]
 
