@@ -19,6 +19,18 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
         }
     }
 
+    /// Create a `StackString` from a `&str`, if it'll fit within `Self::CAPACITY`
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let s = kstring::StackString::<3>::try_new("foo");
+    /// assert_eq!(s.as_deref(), Some("foo"));
+    /// let s = kstring::StackString::<3>::try_new("foobar");
+    /// assert_eq!(s, None);
+    /// ```
     #[inline]
     pub fn try_new(s: impl AsRef<str>) -> Option<Self> {
         let s = s.as_ref();
@@ -34,9 +46,23 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
         }
     }
 
+    /// Create a `StackString` from a `&str`
+    ///
     /// # Safety
     ///
     /// Calling this function with a string larger than `Self::CAPACITY` is undefined behavior.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let s = unsafe {
+    ///     // SAFETY: Literal is short-enough
+    ///     kstring::StackString::<3>::new_unchecked("foo")
+    /// };
+    /// assert_eq!(s, "foo");
+    /// ```
     #[inline]
     pub unsafe fn new_unchecked(s: impl AsRef<str>) -> Self {
         let s = s.as_ref();
@@ -46,6 +72,17 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
         Self { len, buffer }
     }
 
+    /// Extracts a string slice containing the entire `StackString`.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let s = kstring::StackString::<3>::try_new("foo").unwrap();
+    ///
+    /// assert_eq!("foo", s.as_str());
+    /// ```
     #[inline]
     pub fn as_str(&self) -> &str {
         let len = self.len as usize;
@@ -56,6 +93,20 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
         }
     }
 
+    /// Converts a `StackString` into a mutable string slice.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let mut s = kstring::StackString::<6>::try_new("foobar").unwrap();
+    /// let s_mut_str = s.as_mut_str();
+    ///
+    /// s_mut_str.make_ascii_uppercase();
+    ///
+    /// assert_eq!("FOOBAR", s_mut_str);
+    /// ```
     #[inline]
     pub fn as_mut_str(&mut self) -> &mut str {
         let len = self.len as usize;
@@ -66,11 +117,48 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
         }
     }
 
+    /// Truncates this `StackString`, removing all contents.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let mut s = kstring::StackString::<3>::try_new("foo").unwrap();
+    ///
+    /// s.clear();
+    ///
+    /// assert!(s.is_empty());
+    /// assert_eq!(0, s.len());
+    /// ```
     #[inline]
     pub fn clear(&mut self) {
         self.len = 0;
     }
 
+    /// Shortens this `StackString` to the specified length.
+    ///
+    /// If `new_len` is greater than the string's current length, this has no
+    /// effect.
+    ///
+    /// Note that this method has no effect on the allocated capacity
+    /// of the string
+    ///
+    /// # Panics
+    ///
+    /// Panics if `new_len` does not lie on a [`char`] boundary.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let mut s = kstring::StackString::<5>::try_new("hello").unwrap();
+    ///
+    /// s.truncate(2);
+    ///
+    /// assert_eq!(s, "he");
+    /// ```
     #[inline]
     pub fn truncate(&mut self, new_len: usize) {
         if new_len <= self.len() {
