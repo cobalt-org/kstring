@@ -2,6 +2,7 @@ use std::fmt;
 
 pub(crate) type Len = u8;
 
+/// Fixed-size stack-allocated string
 #[derive(Copy, Clone)]
 pub struct StackString<const CAPACITY: usize> {
     len: Len,
