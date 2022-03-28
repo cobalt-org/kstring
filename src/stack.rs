@@ -117,6 +117,27 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
         }
     }
 
+    /// Returns the length of this `StasckString`, in bytes, not [`char`]s or
+    /// graphemes. In other words, it might not be what a human considers the
+    /// length of the string.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let a = kstring::StackString::<3>::try_new("foo").unwrap();
+    /// assert_eq!(a.len(), 3);
+    ///
+    /// let fancy_f = kstring::StackString::<4>::try_new("ƒoo").unwrap();
+    /// assert_eq!(fancy_f.len(), 4);
+    /// assert_eq!(fancy_f.chars().count(), 3);
+    /// ```
+    #[inline]
+    pub fn len(&self) -> usize {
+        self.len as usize
+    }
+
     /// Truncates this `StackString`, removing all contents.
     ///
     /// # Examples
