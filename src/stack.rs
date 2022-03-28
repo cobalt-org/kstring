@@ -33,8 +33,7 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     /// ```
     #[inline]
     #[must_use]
-    pub fn try_new(s: impl AsRef<str>) -> Option<Self> {
-        let s = s.as_ref();
+    pub fn try_new(s: &str) -> Option<Self> {
         let len = s.as_bytes().len();
         if len <= Self::CAPACITY {
             let stack = unsafe {
@@ -66,8 +65,7 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     /// ```
     #[inline]
     #[must_use]
-    pub unsafe fn new_unchecked(s: impl AsRef<str>) -> Self {
-        let s = s.as_ref();
+    pub unsafe fn new_unchecked(s: &str) -> Self {
         let len = s.as_bytes().len() as u8;
         debug_assert!(Self::CAPACITY <= Len::MAX.into());
         let buffer = StrBuffer::new_unchecked(s);

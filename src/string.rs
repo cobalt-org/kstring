@@ -67,7 +67,7 @@ impl KString {
     /// Create an inline string, if possible
     #[inline]
     #[must_use]
-    pub fn try_inline(other: impl AsRef<str>) -> Option<Self> {
+    pub fn try_inline(other: &str) -> Option<Self> {
         KStringInner::try_inline(other).map(|inner| Self { inner })
     }
 
@@ -432,7 +432,7 @@ mod inner {
         }
 
         #[inline]
-        pub fn try_inline(other: impl AsRef<str>) -> Option<Self> {
+        pub fn try_inline(other: &str) -> Option<Self> {
             StackString::try_new(other).map(|inline| Self {
                 inline: InlineVariant::new(inline),
             })
