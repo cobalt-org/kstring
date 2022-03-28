@@ -3,13 +3,13 @@ use std::fmt;
 pub(crate) type Len = u8;
 
 #[derive(Copy, Clone)]
-pub struct StackString<const C: usize> {
+pub struct StackString<const CAPACITY: usize> {
     len: Len,
-    buffer: StrBuffer<C>,
+    buffer: StrBuffer<CAPACITY>,
 }
 
-impl<const C: usize> StackString<C> {
-    pub const CAPACITY: usize = C;
+impl<const CAPACITY: usize> StackString<CAPACITY> {
+    pub const CAPACITY: usize = CAPACITY;
     pub const EMPTY: Self = Self::empty();
 
     const fn empty() -> Self {
@@ -19,9 +19,21 @@ impl<const C: usize> StackString<C> {
         }
     }
 
+    /// Create a `StackString` from a `&str`, if it'll fit within `Self::CAPACITY`
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let s = kstring::StackString::<3>::try_new("foo");
+    /// assert_eq!(s.as_deref(), Some("foo"));
+    /// let s = kstring::StackString::<3>::try_new("foobar");
+    /// assert_eq!(s, None);
+    /// ```
     #[inline]
-    pub fn try_new(s: impl AsRef<str>) -> Option<Self> {
-        let s = s.as_ref();
+    #[must_use]
+    pub fn try_new(s: &str) -> Option<Self> {
         let len = s.as_bytes().len();
         if len <= Self::CAPACITY {
             let stack = unsafe {
@@ -34,19 +46,45 @@ impl<const C: usize> StackString<C> {
         }
     }
 
+    /// Create a `StackString` from a `&str`
+    ///
     /// # Safety
     ///
     /// Calling this function with a string larger than `Self::CAPACITY` is undefined behavior.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let s = unsafe {
+    ///     // SAFETY: Literal is short-enough
+    ///     kstring::StackString::<3>::new_unchecked("foo")
+    /// };
+    /// assert_eq!(s, "foo");
+    /// ```
     #[inline]
-    pub unsafe fn new_unchecked(s: impl AsRef<str>) -> Self {
-        let s = s.as_ref();
+    #[must_use]
+    pub unsafe fn new_unchecked(s: &str) -> Self {
         let len = s.as_bytes().len() as u8;
         debug_assert!(Self::CAPACITY <= Len::MAX.into());
         let buffer = StrBuffer::new_unchecked(s);
         Self { len, buffer }
     }
 
+    /// Extracts a string slice containing the entire `StackString`.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let s = kstring::StackString::<3>::try_new("foo").unwrap();
+    ///
+    /// assert_eq!("foo", s.as_str());
+    /// ```
     #[inline]
+    #[must_use]
     pub fn as_str(&self) -> &str {
         let len = self.len as usize;
         unsafe {
@@ -56,7 +94,22 @@ impl<const C: usize> StackString<C> {
         }
     }
 
+    /// Converts a `StackString` into a mutable string slice.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let mut s = kstring::StackString::<6>::try_new("foobar").unwrap();
+    /// let s_mut_str = s.as_mut_str();
+    ///
+    /// s_mut_str.make_ascii_uppercase();
+    ///
+    /// assert_eq!("FOOBAR", s_mut_str);
+    /// ```
     #[inline]
+    #[must_use]
     pub fn as_mut_str(&mut self) -> &mut str {
         let len = self.len as usize;
         unsafe {
@@ -66,11 +119,89 @@ impl<const C: usize> StackString<C> {
         }
     }
 
+    /// Returns the length of this `StasckString`, in bytes, not [`char`]s or
+    /// graphemes. In other words, it might not be what a human considers the
+    /// length of the string.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let a = kstring::StackString::<3>::try_new("foo").unwrap();
+    /// assert_eq!(a.len(), 3);
+    ///
+    /// let fancy_f = kstring::StackString::<4>::try_new("ƒoo").unwrap();
+    /// assert_eq!(fancy_f.len(), 4);
+    /// assert_eq!(fancy_f.chars().count(), 3);
+    /// ```
+    #[inline]
+    #[must_use]
+    pub fn len(&self) -> usize {
+        self.len as usize
+    }
+
+    /// Returns `true` if this `StackString` has a length of zero, and `false` otherwise.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let mut v = kstring::StackString::<20>::EMPTY;
+    /// assert!(v.is_empty());
+    ///
+    /// let a = kstring::StackString::<3>::try_new("foo").unwrap();
+    /// assert!(!a.is_empty());
+    /// ```
+    #[inline]
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Truncates this `StackString`, removing all contents.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let mut s = kstring::StackString::<3>::try_new("foo").unwrap();
+    ///
+    /// s.clear();
+    ///
+    /// assert!(s.is_empty());
+    /// assert_eq!(0, s.len());
+    /// ```
     #[inline]
     pub fn clear(&mut self) {
         self.len = 0;
     }
 
+    /// Shortens this `StackString` to the specified length.
+    ///
+    /// If `new_len` is greater than the string's current length, this has no
+    /// effect.
+    ///
+    /// Note that this method has no effect on the allocated capacity
+    /// of the string
+    ///
+    /// # Panics
+    ///
+    /// Panics if `new_len` does not lie on a [`char`] boundary.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let mut s = kstring::StackString::<5>::try_new("hello").unwrap();
+    ///
+    /// s.truncate(2);
+    ///
+    /// assert_eq!(s, "he");
+    /// ```
     #[inline]
     pub fn truncate(&mut self, new_len: usize) {
         if new_len <= self.len() {
@@ -80,13 +211,13 @@ impl<const C: usize> StackString<C> {
     }
 }
 
-impl<const C: usize> Default for StackString<C> {
+impl<const CAPACITY: usize> Default for StackString<CAPACITY> {
     fn default() -> Self {
         Self::empty()
     }
 }
 
-impl<const C: usize> std::ops::Deref for StackString<C> {
+impl<const CAPACITY: usize> std::ops::Deref for StackString<CAPACITY> {
     type Target = str;
 
     #[inline]
@@ -95,100 +226,121 @@ impl<const C: usize> std::ops::Deref for StackString<C> {
     }
 }
 
-impl<const C: usize> Eq for StackString<C> {}
+impl<const CAPACITY: usize> Eq for StackString<CAPACITY> {}
 
-impl<'s, const C: usize> PartialEq<StackString<C>> for StackString<C> {
+impl<const C1: usize, const C2: usize> PartialEq<StackString<C1>> for StackString<C2> {
     #[inline]
-    fn eq(&self, other: &StackString<C>) -> bool {
+    fn eq(&self, other: &StackString<C1>) -> bool {
         PartialEq::eq(self.as_str(), other.as_str())
     }
 }
 
-impl<'s, const C: usize> PartialEq<str> for StackString<C> {
+impl<const CAPACITY: usize> PartialEq<str> for StackString<CAPACITY> {
     #[inline]
     fn eq(&self, other: &str) -> bool {
         PartialEq::eq(self.as_str(), other)
     }
 }
 
-impl<'s, const C: usize> PartialEq<&'s str> for StackString<C> {
+impl<'s, const CAPACITY: usize> PartialEq<&'s str> for StackString<CAPACITY> {
     #[inline]
     fn eq(&self, other: &&str) -> bool {
         PartialEq::eq(self.as_str(), *other)
     }
 }
 
-impl<'s, const C: usize> PartialEq<String> for StackString<C> {
+impl<const CAPACITY: usize> PartialEq<String> for StackString<CAPACITY> {
     #[inline]
     fn eq(&self, other: &String) -> bool {
         PartialEq::eq(self.as_str(), other.as_str())
     }
 }
 
-impl<const C: usize> Ord for StackString<C> {
+impl<const CAPACITY: usize> Ord for StackString<CAPACITY> {
     #[inline]
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.as_str().cmp(other.as_str())
     }
 }
 
-impl<const C: usize> PartialOrd for StackString<C> {
+impl<const C1: usize, const C2: usize> PartialOrd<StackString<C1>> for StackString<C2> {
     #[inline]
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+    fn partial_cmp(&self, other: &StackString<C1>) -> Option<std::cmp::Ordering> {
         self.as_str().partial_cmp(other.as_str())
     }
 }
 
-impl<const C: usize> std::hash::Hash for StackString<C> {
+impl<const CAPACITY: usize> PartialOrd<str> for StackString<CAPACITY> {
+    #[inline]
+    fn partial_cmp(&self, other: &str) -> Option<std::cmp::Ordering> {
+        self.as_str().partial_cmp(other)
+    }
+}
+
+impl<'s, const CAPACITY: usize> PartialOrd<&'s str> for StackString<CAPACITY> {
+    #[inline]
+    fn partial_cmp(&self, other: &&str) -> Option<std::cmp::Ordering> {
+        self.as_str().partial_cmp(other)
+    }
+}
+
+impl<const CAPACITY: usize> PartialOrd<String> for StackString<CAPACITY> {
+    #[inline]
+    fn partial_cmp(&self, other: &String) -> Option<std::cmp::Ordering> {
+        self.as_str().partial_cmp(other.as_str())
+    }
+}
+
+impl<const CAPACITY: usize> std::hash::Hash for StackString<CAPACITY> {
     #[inline]
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.as_str().hash(state);
     }
 }
 
-impl<const C: usize> fmt::Debug for StackString<C> {
+impl<const CAPACITY: usize> fmt::Debug for StackString<CAPACITY> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Debug::fmt(self.as_str(), f)
     }
 }
 
-impl<const C: usize> fmt::Display for StackString<C> {
+impl<const CAPACITY: usize> fmt::Display for StackString<CAPACITY> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self.as_str(), f)
     }
 }
 
-impl<const C: usize> AsRef<str> for StackString<C> {
+impl<const CAPACITY: usize> AsRef<str> for StackString<CAPACITY> {
     #[inline]
     fn as_ref(&self) -> &str {
         self.as_str()
     }
 }
 
-impl<const C: usize> AsRef<[u8]> for StackString<C> {
+impl<const CAPACITY: usize> AsRef<[u8]> for StackString<CAPACITY> {
     #[inline]
     fn as_ref(&self) -> &[u8] {
         self.as_bytes()
     }
 }
 
-impl<const C: usize> AsRef<std::ffi::OsStr> for StackString<C> {
+impl<const CAPACITY: usize> AsRef<std::ffi::OsStr> for StackString<CAPACITY> {
     #[inline]
     fn as_ref(&self) -> &std::ffi::OsStr {
         (&**self).as_ref()
     }
 }
 
-impl<const C: usize> AsRef<std::path::Path> for StackString<C> {
+impl<const CAPACITY: usize> AsRef<std::path::Path> for StackString<CAPACITY> {
     #[inline]
     fn as_ref(&self) -> &std::path::Path {
         std::path::Path::new(self)
     }
 }
 
-impl<const C: usize> std::borrow::Borrow<str> for StackString<C> {
+impl<const CAPACITY: usize> std::borrow::Borrow<str> for StackString<CAPACITY> {
     #[inline]
     fn borrow(&self) -> &str {
         self.as_str()
@@ -197,18 +349,18 @@ impl<const C: usize> std::borrow::Borrow<str> for StackString<C> {
 
 #[derive(Copy, Clone)]
 #[repr(transparent)]
-pub(crate) struct StrBuffer<const C: usize>([u8; C]);
+pub(crate) struct StrBuffer<const CAPACITY: usize>([u8; CAPACITY]);
 
-impl<const C: usize> StrBuffer<C> {
+impl<const CAPACITY: usize> StrBuffer<CAPACITY> {
     pub(crate) const fn empty() -> Self {
-        let array = [0; C];
+        let array = [0; CAPACITY];
         StrBuffer(array)
     }
 
     #[inline]
     pub(crate) unsafe fn new_unchecked(s: &str) -> Self {
         let len = s.as_bytes().len();
-        debug_assert!(len <= C);
+        debug_assert!(len <= CAPACITY);
         let mut buffer = Self::default();
         buffer
             .0
@@ -230,7 +382,7 @@ impl<const C: usize> StrBuffer<C> {
     }
 }
 
-impl<const C: usize> Default for StrBuffer<C> {
+impl<const CAPACITY: usize> Default for StrBuffer<CAPACITY> {
     fn default() -> Self {
         Self::empty()
     }

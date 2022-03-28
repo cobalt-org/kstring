@@ -23,12 +23,14 @@ pub(crate) enum KStringCowInner<'s> {
 impl<'s> KStringCow<'s> {
     /// Create a new empty `KStringCow`.
     #[inline]
+    #[must_use]
     pub fn new() -> Self {
         Default::default()
     }
 
     /// Create an owned `KStringCow`.
     #[inline]
+    #[must_use]
     pub fn from_boxed(other: BoxedStr) -> Self {
         Self {
             inner: KStringCowInner::Owned(KString::from_boxed(other)),
@@ -37,6 +39,7 @@ impl<'s> KStringCow<'s> {
 
     /// Create an owned `KStringCow`.
     #[inline]
+    #[must_use]
     pub fn from_string(other: StdString) -> Self {
         Self {
             inner: KStringCowInner::Owned(KString::from_string(other)),
@@ -45,6 +48,7 @@ impl<'s> KStringCow<'s> {
 
     /// Create a reference to a borrowed data.
     #[inline]
+    #[must_use]
     pub fn from_ref(other: &'s str) -> Self {
         Self {
             inner: KStringCowInner::Borrowed(other),
@@ -53,6 +57,7 @@ impl<'s> KStringCow<'s> {
 
     /// Create a reference to a `'static` data.
     #[inline]
+    #[must_use]
     pub fn from_static(other: &'static str) -> Self {
         Self {
             inner: KStringCowInner::Owned(KString::from_static(other)),
@@ -61,36 +66,42 @@ impl<'s> KStringCow<'s> {
 
     /// Get a reference to the `KString`.
     #[inline]
+    #[must_use]
     pub fn as_ref(&self) -> KStringRef<'_> {
         self.inner.as_ref()
     }
 
     /// Clone the data into an owned-type.
     #[inline]
+    #[must_use]
     pub fn into_owned(self) -> KString {
         self.inner.into_owned()
     }
 
     /// Extracts a string slice containing the entire `KStringCow`.
     #[inline]
+    #[must_use]
     pub fn as_str(&self) -> &str {
         self.inner.as_str()
     }
 
     /// Convert to a mutable string type, cloning the data if necessary.
     #[inline]
+    #[must_use]
     pub fn into_string(self) -> StdString {
         String::from(self.into_boxed_str())
     }
 
     /// Convert to a mutable string type, cloning the data if necessary.
     #[inline]
+    #[must_use]
     pub fn into_boxed_str(self) -> BoxedStr {
         self.inner.into_boxed_str()
     }
 
     /// Convert to a Cow str
     #[inline]
+    #[must_use]
     pub fn into_cow_str(self) -> Cow<'s, str> {
         self.inner.into_cow_str()
     }

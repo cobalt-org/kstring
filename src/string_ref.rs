@@ -22,12 +22,14 @@ pub(crate) enum KStringRefInner<'s> {
 impl<'s> KStringRef<'s> {
     /// Create a new empty `KString`.
     #[inline]
+    #[must_use]
     pub fn new() -> Self {
         Default::default()
     }
 
     /// Create a reference to a borrowed data.
     #[inline]
+    #[must_use]
     pub fn from_ref(other: &'s str) -> Self {
         Self {
             inner: KStringRefInner::Borrowed(other),
@@ -36,6 +38,7 @@ impl<'s> KStringRef<'s> {
 
     /// Create a reference to a `'static` data.
     #[inline]
+    #[must_use]
     pub fn from_static(other: &'static str) -> Self {
         Self {
             inner: KStringRefInner::Singleton(other),
@@ -44,6 +47,7 @@ impl<'s> KStringRef<'s> {
 
     /// Clone the data into an owned-type.
     #[inline]
+    #[must_use]
     #[allow(clippy::wrong_self_convention)]
     pub fn to_owned(&self) -> KString {
         self.inner.to_owned()
@@ -51,12 +55,14 @@ impl<'s> KStringRef<'s> {
 
     /// Extracts a string slice containing the entire `KStringRef`.
     #[inline]
+    #[must_use]
     pub fn as_str(&self) -> &str {
         self.inner.as_str()
     }
 
     /// Convert to a mutable string type, cloning the data if necessary.
     #[inline]
+    #[must_use]
     pub fn into_mut(self) -> StdString {
         self.inner.into_mut()
     }
