@@ -23,12 +23,14 @@ impl KString {
 
     /// Create a new empty `KString`.
     #[inline]
+    #[must_use]
     pub fn new() -> Self {
         Default::default()
     }
 
     /// Create an owned `KString`.
     #[inline]
+    #[must_use]
     pub fn from_boxed(other: BoxedStr) -> Self {
         Self {
             inner: KStringInner::from_boxed(other),
@@ -37,6 +39,7 @@ impl KString {
 
     /// Create an owned `KString`.
     #[inline]
+    #[must_use]
     pub fn from_string(other: StdString) -> Self {
         Self {
             inner: KStringInner::from_string(other),
@@ -45,6 +48,7 @@ impl KString {
 
     /// Create an owned `KString` optimally from a reference.
     #[inline]
+    #[must_use]
     pub fn from_ref(other: &str) -> Self {
         Self {
             inner: KStringInner::from_ref(other),
@@ -53,6 +57,7 @@ impl KString {
 
     /// Create a reference to a `'static` data.
     #[inline]
+    #[must_use]
     pub const fn from_static(other: &'static str) -> Self {
         Self {
             inner: KStringInner::from_static(other),
@@ -61,36 +66,42 @@ impl KString {
 
     /// Create an inline string, if possible
     #[inline]
+    #[must_use]
     pub fn try_inline(other: impl AsRef<str>) -> Option<Self> {
         KStringInner::try_inline(other).map(|inner| Self { inner })
     }
 
     /// Get a reference to the `KString`.
     #[inline]
+    #[must_use]
     pub fn as_ref(&self) -> KStringRef<'_> {
         self.inner.as_ref()
     }
 
     /// Extracts a string slice containing the entire `KString`.
     #[inline]
+    #[must_use]
     pub fn as_str(&self) -> &str {
         self.inner.as_str()
     }
 
     /// Convert to a mutable string type, cloning the data if necessary.
     #[inline]
+    #[must_use]
     pub fn into_string(self) -> StdString {
         String::from(self.into_boxed_str())
     }
 
     /// Convert to a mutable string type, cloning the data if necessary.
     #[inline]
+    #[must_use]
     pub fn into_boxed_str(self) -> BoxedStr {
         self.inner.into_boxed_str()
     }
 
     /// Convert to a Cow str
     #[inline]
+    #[must_use]
     pub fn into_cow_str(self) -> Cow<'static, str> {
         self.inner.into_cow_str()
     }

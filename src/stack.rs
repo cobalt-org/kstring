@@ -32,6 +32,7 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     /// assert_eq!(s, None);
     /// ```
     #[inline]
+    #[must_use]
     pub fn try_new(s: impl AsRef<str>) -> Option<Self> {
         let s = s.as_ref();
         let len = s.as_bytes().len();
@@ -64,6 +65,7 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     /// assert_eq!(s, "foo");
     /// ```
     #[inline]
+    #[must_use]
     pub unsafe fn new_unchecked(s: impl AsRef<str>) -> Self {
         let s = s.as_ref();
         let len = s.as_bytes().len() as u8;
@@ -84,6 +86,7 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     /// assert_eq!("foo", s.as_str());
     /// ```
     #[inline]
+    #[must_use]
     pub fn as_str(&self) -> &str {
         let len = self.len as usize;
         unsafe {
@@ -108,6 +111,7 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     /// assert_eq!("FOOBAR", s_mut_str);
     /// ```
     #[inline]
+    #[must_use]
     pub fn as_mut_str(&mut self) -> &mut str {
         let len = self.len as usize;
         unsafe {
@@ -134,6 +138,7 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     /// assert_eq!(fancy_f.chars().count(), 3);
     /// ```
     #[inline]
+    #[must_use]
     pub fn len(&self) -> usize {
         self.len as usize
     }
