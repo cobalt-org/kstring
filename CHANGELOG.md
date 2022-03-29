@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [2.0.0] - 2022-03-29
+
 Note: while we intended to be "forever 1.0" to be safe to use in public APIs,
 we checked our current users and it seemed safe enough to bump major to get the
 benefits from some breaking changes.
@@ -82,7 +84,8 @@ benefits from some breaking changes.
 ## [1.0.0] - 2020-07-07
 
 <!-- next-url -->
-[Unreleased]: https://github.com/cobalt-org/kstring/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/cobalt-org/kstring/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/cobalt-org/kstring/compare/v1.1.0...v2.0.0
 [1.1.0]: https://github.com/cobalt-org/kstring/compare/v1.0.6...v1.1.0
 [1.0.6]: https://github.com/cobalt-org/kstring/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/cobalt-org/kstring/compare/v1.0.4...v1.0.5
