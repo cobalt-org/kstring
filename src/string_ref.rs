@@ -1,7 +1,7 @@
 use std::fmt;
 
-use crate::KString;
-use crate::KStringCow;
+use crate::KStringBase;
+use crate::KStringCowBase;
 
 type StdString = std::string::String;
 type BoxedStr = Box<str>;
@@ -20,11 +20,20 @@ pub(crate) enum KStringRefInner<'s> {
 }
 
 impl<'s> KStringRef<'s> {
-    /// Create a new empty `KString`.
+    /// Create a new empty `KStringBase`.
     #[inline]
     #[must_use]
-    pub fn new() -> Self {
-        Default::default()
+    pub const fn new() -> Self {
+        Self::from_static("")
+    }
+
+    /// Create a reference to a `'static` data.
+    #[inline]
+    #[must_use]
+    pub const fn from_static(other: &'static str) -> Self {
+        Self {
+            inner: KStringRefInner::Singleton(other),
+        }
     }
 
     /// Create a reference to a borrowed data.
@@ -36,20 +45,11 @@ impl<'s> KStringRef<'s> {
         }
     }
 
-    /// Create a reference to a `'static` data.
-    #[inline]
-    #[must_use]
-    pub fn from_static(other: &'static str) -> Self {
-        Self {
-            inner: KStringRefInner::Singleton(other),
-        }
-    }
-
     /// Clone the data into an owned-type.
     #[inline]
     #[must_use]
     #[allow(clippy::wrong_self_convention)]
-    pub fn to_owned(&self) -> KString {
+    pub fn to_owned<B: crate::backend::HeapStr>(&self) -> KStringBase<B> {
         self.inner.to_owned()
     }
 
@@ -71,10 +71,10 @@ impl<'s> KStringRef<'s> {
 impl<'s> KStringRefInner<'s> {
     #[inline]
     #[allow(clippy::wrong_self_convention)]
-    fn to_owned(&self) -> KString {
+    fn to_owned<B: crate::backend::HeapStr>(&self) -> KStringBase<B> {
         match self {
-            Self::Borrowed(s) => KString::from_ref(s),
-            Self::Singleton(s) => KString::from_static(s),
+            Self::Borrowed(s) => KStringBase::from_ref(s),
+            Self::Singleton(s) => KStringBase::from_static(s),
         }
     }
 
@@ -204,20 +204,20 @@ impl<'s> std::borrow::Borrow<str> for KStringRef<'s> {
 impl<'s> Default for KStringRef<'s> {
     #[inline]
     fn default() -> Self {
-        Self::from_static("")
+        Self::new()
     }
 }
 
-impl<'s> From<&'s KString> for KStringRef<'s> {
+impl<'s, B: crate::backend::HeapStr> From<&'s KStringBase<B>> for KStringRef<'s> {
     #[inline]
-    fn from(other: &'s KString) -> Self {
+    fn from(other: &'s KStringBase<B>) -> Self {
         other.as_ref()
     }
 }
 
-impl<'s> From<&'s KStringCow<'s>> for KStringRef<'s> {
+impl<'s, B: crate::backend::HeapStr> From<&'s KStringCowBase<'s, B>> for KStringRef<'s> {
     #[inline]
-    fn from(other: &'s KStringCow<'s>) -> Self {
+    fn from(other: &'s KStringCowBase<'s, B>) -> Self {
         other.as_ref()
     }
 }
