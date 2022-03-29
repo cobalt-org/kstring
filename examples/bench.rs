@@ -10,9 +10,9 @@ fn main() {
         .unwrap();
     #[allow(clippy::redundant_closure)] // Needed for consistent type
     let method = match method.as_str() {
-        "from_ref" => |s| kstring::KString::<kstring::backend::DefaultStr>::from_ref(s),
+        "from_ref" => |s| kstring::KString::<kstring::backend::BoxedStr>::from_ref(s),
         "from_string" => {
-            |s| kstring::KString::<kstring::backend::DefaultStr>::from_string(String::from(s))
+            |s| kstring::KString::<kstring::backend::BoxedStr>::from_string(String::from(s))
         }
         _ => panic!("{:?} unsupported, try `from_ref`, `from_string`", method),
     };

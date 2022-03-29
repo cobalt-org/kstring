@@ -1,7 +1,7 @@
 #[cfg(feature = "arc")]
-pub type DefaultStr = crate::backend::ArcStr;
+pub(crate) type DefaultStr = crate::backend::ArcStr;
 #[cfg(not(feature = "arc"))]
-pub type DefaultStr = crate::backend::BoxedStr;
+pub(crate) type DefaultStr = crate::backend::BoxedStr;
 
 pub type BoxedStr = Box<str>;
 static_assertions::assert_eq_size!(DefaultStr, BoxedStr);
