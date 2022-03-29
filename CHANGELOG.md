@@ -7,7 +7,35 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
-## [1.1.0] - 2022-03-28
+Note: while we intended to be "forever 1.0" to be safe to use in public APIs,
+we checked our current users and it seemed safe enough to bump major to get the
+benefits from some breaking changes.
+
+### Compatibility
+
+- `KString` is now a type alias to `KStringBase<...>` (where `...` depends on feature flags)
+- `serde` is no longer a default feature
+- `std` and `unsafe` are now default features
+- MSRV is now 1.59
+
+### Features
+
+- Expose `StackString`
+- `KString::try_inline` to exclusively use `StackString`
+- `const fn`ed some functions
+- Opt-in `forbid(unsafe_code)` by removing the default `unsafe` feature
+- Allow configuring the heap string type outside of feature flags
+
+### Fixes
+
+- Add `#[must_use]` everywhere
+
+### Performance
+
+- Remove some extra bounds checks
+- Speed up `clone`
+
+## ~~[1.1.0] - 2022-03-28~~
 
 ## [1.0.6] - 2021-11-05
 
