@@ -34,7 +34,10 @@ pre-release-replacements = [
 ]
 
 [features]
-default = ["unsafe", "serde"]
+default = ["std", "unsafe"]
+
+## Allow use of `std`
+std = []
 
 ## O(1) clone support
 arc = []
