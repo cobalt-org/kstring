@@ -49,7 +49,7 @@ impl<'s> KStringRef<'s> {
     #[inline]
     #[must_use]
     #[allow(clippy::wrong_self_convention)]
-    pub fn to_owned<B: crate::backend::StorageBackend>(&self) -> KStringBase<B> {
+    pub fn to_owned<B: crate::backend::HeapStr>(&self) -> KStringBase<B> {
         self.inner.to_owned()
     }
 
@@ -71,7 +71,7 @@ impl<'s> KStringRef<'s> {
 impl<'s> KStringRefInner<'s> {
     #[inline]
     #[allow(clippy::wrong_self_convention)]
-    fn to_owned<B: crate::backend::StorageBackend>(&self) -> KStringBase<B> {
+    fn to_owned<B: crate::backend::HeapStr>(&self) -> KStringBase<B> {
         match self {
             Self::Borrowed(s) => KStringBase::from_ref(s),
             Self::Singleton(s) => KStringBase::from_static(s),
@@ -208,14 +208,14 @@ impl<'s> Default for KStringRef<'s> {
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<&'s KStringBase<B>> for KStringRef<'s> {
+impl<'s, B: crate::backend::HeapStr> From<&'s KStringBase<B>> for KStringRef<'s> {
     #[inline]
     fn from(other: &'s KStringBase<B>) -> Self {
         other.as_ref()
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<&'s KStringCowBase<'s, B>> for KStringRef<'s> {
+impl<'s, B: crate::backend::HeapStr> From<&'s KStringCowBase<'s, B>> for KStringRef<'s> {
     #[inline]
     fn from(other: &'s KStringCowBase<'s, B>) -> Self {
         other.as_ref()

@@ -3,23 +3,27 @@ pub(crate) type DefaultStr = crate::backend::ArcStr;
 #[cfg(not(feature = "arc"))]
 pub(crate) type DefaultStr = crate::backend::BoxedStr;
 
+/// Fast allocations, O(n) clones
 pub type BoxedStr = Box<str>;
 static_assertions::assert_eq_size!(DefaultStr, BoxedStr);
 
+/// Cross-thread, O(1) clones
 pub type ArcStr = std::sync::Arc<str>;
 static_assertions::assert_eq_size!(DefaultStr, ArcStr);
 
+/// O(1) clones
 pub type RcStr = std::rc::Rc<str>;
 static_assertions::assert_eq_size!(DefaultStr, RcStr);
 
-pub trait StorageBackend: std::fmt::Debug + Clone + private::Sealed {
+/// Abstract over different type of heap-allocated strings
+pub trait HeapStr: std::fmt::Debug + Clone + private::Sealed {
     fn from_str(other: &str) -> Self;
     fn from_string(other: String) -> Self;
     fn from_boxed_str(other: BoxedStr) -> Self;
     fn as_str(&self) -> &str;
 }
 
-impl StorageBackend for BoxedStr {
+impl HeapStr for BoxedStr {
     #[inline]
     fn from_str(other: &str) -> Self {
         other.into()
@@ -41,7 +45,7 @@ impl StorageBackend for BoxedStr {
     }
 }
 
-impl StorageBackend for ArcStr {
+impl HeapStr for ArcStr {
     #[inline]
     fn from_str(other: &str) -> Self {
         other.into()
@@ -63,7 +67,7 @@ impl StorageBackend for ArcStr {
     }
 }
 
-impl StorageBackend for RcStr {
+impl HeapStr for RcStr {
     #[inline]
     fn from_str(other: &str) -> Self {
         other.into()

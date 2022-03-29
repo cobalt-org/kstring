@@ -43,7 +43,7 @@ impl<B> KStringBase<B> {
     }
 }
 
-impl<B: crate::backend::StorageBackend> KStringBase<B> {
+impl<B: crate::backend::HeapStr> KStringBase<B> {
     /// Create an owned `KStringBase`.
     #[inline]
     #[must_use]
@@ -107,7 +107,7 @@ impl<B: crate::backend::StorageBackend> KStringBase<B> {
     }
 }
 
-impl<B: crate::backend::StorageBackend> std::ops::Deref for KStringBase<B> {
+impl<B: crate::backend::HeapStr> std::ops::Deref for KStringBase<B> {
     type Target = str;
 
     #[inline]
@@ -116,177 +116,177 @@ impl<B: crate::backend::StorageBackend> std::ops::Deref for KStringBase<B> {
     }
 }
 
-impl<B: crate::backend::StorageBackend> Eq for KStringBase<B> {}
+impl<B: crate::backend::HeapStr> Eq for KStringBase<B> {}
 
-impl<'s, B: crate::backend::StorageBackend> PartialEq<KStringBase<B>> for KStringBase<B> {
+impl<'s, B: crate::backend::HeapStr> PartialEq<KStringBase<B>> for KStringBase<B> {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
         PartialEq::eq(self.as_str(), other.as_str())
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> PartialEq<str> for KStringBase<B> {
+impl<'s, B: crate::backend::HeapStr> PartialEq<str> for KStringBase<B> {
     #[inline]
     fn eq(&self, other: &str) -> bool {
         PartialEq::eq(self.as_str(), other)
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> PartialEq<&'s str> for KStringBase<B> {
+impl<'s, B: crate::backend::HeapStr> PartialEq<&'s str> for KStringBase<B> {
     #[inline]
     fn eq(&self, other: &&str) -> bool {
         PartialEq::eq(self.as_str(), *other)
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> PartialEq<String> for KStringBase<B> {
+impl<'s, B: crate::backend::HeapStr> PartialEq<String> for KStringBase<B> {
     #[inline]
     fn eq(&self, other: &StdString) -> bool {
         PartialEq::eq(self.as_str(), other.as_str())
     }
 }
 
-impl<B: crate::backend::StorageBackend> Ord for KStringBase<B> {
+impl<B: crate::backend::HeapStr> Ord for KStringBase<B> {
     #[inline]
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.as_str().cmp(other.as_str())
     }
 }
 
-impl<B: crate::backend::StorageBackend> PartialOrd for KStringBase<B> {
+impl<B: crate::backend::HeapStr> PartialOrd for KStringBase<B> {
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         self.as_str().partial_cmp(other.as_str())
     }
 }
 
-impl<B: crate::backend::StorageBackend> std::hash::Hash for KStringBase<B> {
+impl<B: crate::backend::HeapStr> std::hash::Hash for KStringBase<B> {
     #[inline]
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.as_str().hash(state);
     }
 }
 
-impl<B: crate::backend::StorageBackend> fmt::Debug for KStringBase<B> {
+impl<B: crate::backend::HeapStr> fmt::Debug for KStringBase<B> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.as_str().fmt(f)
     }
 }
 
-impl<B: crate::backend::StorageBackend> fmt::Display for KStringBase<B> {
+impl<B: crate::backend::HeapStr> fmt::Display for KStringBase<B> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self.as_str(), f)
     }
 }
 
-impl<B: crate::backend::StorageBackend> AsRef<str> for KStringBase<B> {
+impl<B: crate::backend::HeapStr> AsRef<str> for KStringBase<B> {
     #[inline]
     fn as_ref(&self) -> &str {
         self.as_str()
     }
 }
 
-impl<B: crate::backend::StorageBackend> AsRef<[u8]> for KStringBase<B> {
+impl<B: crate::backend::HeapStr> AsRef<[u8]> for KStringBase<B> {
     #[inline]
     fn as_ref(&self) -> &[u8] {
         self.as_bytes()
     }
 }
 
-impl<B: crate::backend::StorageBackend> AsRef<std::ffi::OsStr> for KStringBase<B> {
+impl<B: crate::backend::HeapStr> AsRef<std::ffi::OsStr> for KStringBase<B> {
     #[inline]
     fn as_ref(&self) -> &std::ffi::OsStr {
         (&**self).as_ref()
     }
 }
 
-impl<B: crate::backend::StorageBackend> AsRef<std::path::Path> for KStringBase<B> {
+impl<B: crate::backend::HeapStr> AsRef<std::path::Path> for KStringBase<B> {
     #[inline]
     fn as_ref(&self) -> &std::path::Path {
         std::path::Path::new(self)
     }
 }
 
-impl<B: crate::backend::StorageBackend> std::borrow::Borrow<str> for KStringBase<B> {
+impl<B: crate::backend::HeapStr> std::borrow::Borrow<str> for KStringBase<B> {
     #[inline]
     fn borrow(&self) -> &str {
         self.as_str()
     }
 }
 
-impl<B: crate::backend::StorageBackend> Default for KStringBase<B> {
+impl<B: crate::backend::HeapStr> Default for KStringBase<B> {
     #[inline]
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<KStringRef<'s>> for KStringBase<B> {
+impl<'s, B: crate::backend::HeapStr> From<KStringRef<'s>> for KStringBase<B> {
     #[inline]
     fn from(other: KStringRef<'s>) -> Self {
         other.to_owned()
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<&'s KStringRef<'s>> for KStringBase<B> {
+impl<'s, B: crate::backend::HeapStr> From<&'s KStringRef<'s>> for KStringBase<B> {
     #[inline]
     fn from(other: &'s KStringRef<'s>) -> Self {
         other.to_owned()
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<KStringCowBase<'s, B>> for KStringBase<B> {
+impl<'s, B: crate::backend::HeapStr> From<KStringCowBase<'s, B>> for KStringBase<B> {
     #[inline]
     fn from(other: KStringCowBase<'s, B>) -> Self {
         other.into_owned()
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<&'s KStringCowBase<'s, B>> for KStringBase<B> {
+impl<'s, B: crate::backend::HeapStr> From<&'s KStringCowBase<'s, B>> for KStringBase<B> {
     #[inline]
     fn from(other: &'s KStringCowBase<'s, B>) -> Self {
         other.clone().into_owned()
     }
 }
 
-impl<B: crate::backend::StorageBackend> From<StdString> for KStringBase<B> {
+impl<B: crate::backend::HeapStr> From<StdString> for KStringBase<B> {
     #[inline]
     fn from(other: StdString) -> Self {
         Self::from_string(other)
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<&'s StdString> for KStringBase<B> {
+impl<'s, B: crate::backend::HeapStr> From<&'s StdString> for KStringBase<B> {
     #[inline]
     fn from(other: &'s StdString) -> Self {
         Self::from_ref(other)
     }
 }
 
-impl<B: crate::backend::StorageBackend> From<crate::backend::BoxedStr> for KStringBase<B> {
+impl<B: crate::backend::HeapStr> From<crate::backend::BoxedStr> for KStringBase<B> {
     #[inline]
     fn from(other: crate::backend::BoxedStr) -> Self {
         Self::from_boxed(other)
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<&'s crate::backend::BoxedStr> for KStringBase<B> {
+impl<'s, B: crate::backend::HeapStr> From<&'s crate::backend::BoxedStr> for KStringBase<B> {
     #[inline]
     fn from(other: &'s crate::backend::BoxedStr) -> Self {
         Self::from_ref(other)
     }
 }
 
-impl<B: crate::backend::StorageBackend> From<&'static str> for KStringBase<B> {
+impl<B: crate::backend::HeapStr> From<&'static str> for KStringBase<B> {
     #[inline]
     fn from(other: &'static str) -> Self {
         Self::from_static(other)
     }
 }
 
-impl<B: crate::backend::StorageBackend> std::str::FromStr for KStringBase<B> {
+impl<B: crate::backend::HeapStr> std::str::FromStr for KStringBase<B> {
     type Err = std::convert::Infallible;
     #[inline]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -295,7 +295,7 @@ impl<B: crate::backend::StorageBackend> std::str::FromStr for KStringBase<B> {
 }
 
 #[cfg(feature = "serde")]
-impl<B: crate::backend::StorageBackend> serde::Serialize for KStringBase<B> {
+impl<B: crate::backend::HeapStr> serde::Serialize for KStringBase<B> {
     #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -306,7 +306,7 @@ impl<B: crate::backend::StorageBackend> serde::Serialize for KStringBase<B> {
 }
 
 #[cfg(feature = "serde")]
-impl<'de, B: crate::backend::StorageBackend> serde::Deserialize<'de> for KStringBase<B> {
+impl<'de, B: crate::backend::HeapStr> serde::Deserialize<'de> for KStringBase<B> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -319,7 +319,7 @@ impl<'de, B: crate::backend::StorageBackend> serde::Deserialize<'de> for KString
 struct StringVisitor<B>(std::marker::PhantomData<B>);
 
 #[cfg(feature = "serde")]
-impl<'de, B: crate::backend::StorageBackend> serde::de::Visitor<'de> for StringVisitor<B> {
+impl<'de, B: crate::backend::HeapStr> serde::de::Visitor<'de> for StringVisitor<B> {
     type Value = KStringBase<B>;
 
     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -392,7 +392,7 @@ mod inner {
         }
     }
 
-    impl<B: crate::backend::StorageBackend> KStringInner<B> {
+    impl<B: crate::backend::HeapStr> KStringInner<B> {
         #[inline]
         pub(super) fn from_boxed(other: BoxedStr) -> Self {
             #[allow(clippy::useless_conversion)]
@@ -465,7 +465,7 @@ mod inner {
     //
     // My only guess is that the `clone()` calls we delegate to are just that much bigger than
     // `as_str()` that, when combined with a jump table, is blowing the icache, slowing things down.
-    impl<B: crate::backend::StorageBackend> Clone for KStringInner<B> {
+    impl<B: crate::backend::HeapStr> Clone for KStringInner<B> {
         fn clone(&self) -> Self {
             match self {
                 Self::Singleton(s) => Self::Singleton(s),
@@ -533,7 +533,7 @@ mod inner {
         }
     }
 
-    impl<B: crate::backend::StorageBackend> KStringInner<B> {
+    impl<B: crate::backend::HeapStr> KStringInner<B> {
         #[inline]
         pub(super) fn from_boxed(other: crate::backend::BoxedStr) -> Self {
             #[allow(clippy::useless_conversion)]
@@ -774,7 +774,7 @@ mod inner {
         }
     }
 
-    impl<B: crate::backend::StorageBackend> std::fmt::Debug for OwnedVariant<B> {
+    impl<B: crate::backend::HeapStr> std::fmt::Debug for OwnedVariant<B> {
         #[inline]
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             self.payload.fmt(f)

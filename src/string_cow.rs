@@ -41,7 +41,7 @@ impl<'s, B> KStringCowBase<'s, B> {
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> KStringCowBase<'s, B> {
     /// Create an owned `KStringCowBase`.
     #[inline]
     #[must_use]
@@ -112,7 +112,7 @@ impl<'s, B: crate::backend::StorageBackend> KStringCowBase<'s, B> {
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> KStringCowInner<'s, B> {
+impl<'s, B: crate::backend::HeapStr> KStringCowInner<'s, B> {
     #[inline]
     fn as_ref(&self) -> KStringRef<'_> {
         match self {
@@ -155,7 +155,7 @@ impl<'s, B: crate::backend::StorageBackend> KStringCowInner<'s, B> {
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> std::ops::Deref for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> std::ops::Deref for KStringCowBase<'s, B> {
     type Target = str;
 
     #[inline]
@@ -164,102 +164,100 @@ impl<'s, B: crate::backend::StorageBackend> std::ops::Deref for KStringCowBase<'
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> Eq for KStringCowBase<'s, B> {}
+impl<'s, B: crate::backend::HeapStr> Eq for KStringCowBase<'s, B> {}
 
-impl<'s, B: crate::backend::StorageBackend> PartialEq<KStringCowBase<'s, B>>
-    for KStringCowBase<'s, B>
-{
+impl<'s, B: crate::backend::HeapStr> PartialEq<KStringCowBase<'s, B>> for KStringCowBase<'s, B> {
     #[inline]
     fn eq(&self, other: &KStringCowBase<'s, B>) -> bool {
         PartialEq::eq(self.as_str(), other.as_str())
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> PartialEq<str> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> PartialEq<str> for KStringCowBase<'s, B> {
     #[inline]
     fn eq(&self, other: &str) -> bool {
         PartialEq::eq(self.as_str(), other)
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> PartialEq<&'s str> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> PartialEq<&'s str> for KStringCowBase<'s, B> {
     #[inline]
     fn eq(&self, other: &&str) -> bool {
         PartialEq::eq(self.as_str(), *other)
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> PartialEq<String> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> PartialEq<String> for KStringCowBase<'s, B> {
     #[inline]
     fn eq(&self, other: &StdString) -> bool {
         PartialEq::eq(self.as_str(), other.as_str())
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> Ord for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> Ord for KStringCowBase<'s, B> {
     #[inline]
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.as_str().cmp(other.as_str())
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> PartialOrd for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> PartialOrd for KStringCowBase<'s, B> {
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         self.as_str().partial_cmp(other.as_str())
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> std::hash::Hash for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> std::hash::Hash for KStringCowBase<'s, B> {
     #[inline]
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.as_str().hash(state);
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> fmt::Debug for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> fmt::Debug for KStringCowBase<'s, B> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.as_str().fmt(f)
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> fmt::Display for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> fmt::Display for KStringCowBase<'s, B> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self.as_str(), f)
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> AsRef<str> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> AsRef<str> for KStringCowBase<'s, B> {
     #[inline]
     fn as_ref(&self) -> &str {
         self.as_str()
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> AsRef<[u8]> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> AsRef<[u8]> for KStringCowBase<'s, B> {
     #[inline]
     fn as_ref(&self) -> &[u8] {
         self.as_bytes()
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> AsRef<std::ffi::OsStr> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> AsRef<std::ffi::OsStr> for KStringCowBase<'s, B> {
     #[inline]
     fn as_ref(&self) -> &std::ffi::OsStr {
         (&**self).as_ref()
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> AsRef<std::path::Path> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> AsRef<std::path::Path> for KStringCowBase<'s, B> {
     #[inline]
     fn as_ref(&self) -> &std::path::Path {
         std::path::Path::new(self)
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> std::borrow::Borrow<str> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> std::borrow::Borrow<str> for KStringCowBase<'s, B> {
     #[inline]
     fn borrow(&self) -> &str {
         self.as_str()
@@ -273,7 +271,7 @@ impl<'s, B> Default for KStringCowBase<'s, B> {
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<KStringBase<B>> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> From<KStringBase<B>> for KStringCowBase<'s, B> {
     #[inline]
     fn from(other: KStringBase<B>) -> Self {
         let inner = KStringCowInner::Owned(other);
@@ -281,7 +279,7 @@ impl<'s, B: crate::backend::StorageBackend> From<KStringBase<B>> for KStringCowB
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<&'s KStringBase<B>> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> From<&'s KStringBase<B>> for KStringCowBase<'s, B> {
     #[inline]
     fn from(other: &'s KStringBase<B>) -> Self {
         let other = other.as_ref();
@@ -289,7 +287,7 @@ impl<'s, B: crate::backend::StorageBackend> From<&'s KStringBase<B>> for KString
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<KStringRef<'s>> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> From<KStringRef<'s>> for KStringCowBase<'s, B> {
     #[inline]
     fn from(other: KStringRef<'s>) -> Self {
         match other.inner {
@@ -299,7 +297,7 @@ impl<'s, B: crate::backend::StorageBackend> From<KStringRef<'s>> for KStringCowB
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<&'s KStringRef<'s>> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> From<&'s KStringRef<'s>> for KStringCowBase<'s, B> {
     #[inline]
     fn from(other: &'s KStringRef<'s>) -> Self {
         match other.inner {
@@ -309,21 +307,21 @@ impl<'s, B: crate::backend::StorageBackend> From<&'s KStringRef<'s>> for KString
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<StdString> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> From<StdString> for KStringCowBase<'s, B> {
     #[inline]
     fn from(other: StdString) -> Self {
         Self::from_string(other)
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<&'s StdString> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> From<&'s StdString> for KStringCowBase<'s, B> {
     #[inline]
     fn from(other: &'s StdString) -> Self {
         Self::from_ref(other.as_str())
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<BoxedStr> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> From<BoxedStr> for KStringCowBase<'s, B> {
     #[inline]
     fn from(other: BoxedStr) -> Self {
         // Since the memory is already allocated, don't bother moving it into a FixedString
@@ -331,21 +329,21 @@ impl<'s, B: crate::backend::StorageBackend> From<BoxedStr> for KStringCowBase<'s
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<&'s BoxedStr> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> From<&'s BoxedStr> for KStringCowBase<'s, B> {
     #[inline]
     fn from(other: &'s BoxedStr) -> Self {
         Self::from_ref(other)
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<&'s str> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> From<&'s str> for KStringCowBase<'s, B> {
     #[inline]
     fn from(other: &'s str) -> Self {
         Self::from_ref(other)
     }
 }
 
-impl<B: crate::backend::StorageBackend> std::str::FromStr for KStringCowBase<'_, B> {
+impl<B: crate::backend::HeapStr> std::str::FromStr for KStringCowBase<'_, B> {
     type Err = std::convert::Infallible;
     #[inline]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -354,7 +352,7 @@ impl<B: crate::backend::StorageBackend> std::str::FromStr for KStringCowBase<'_,
 }
 
 #[cfg(feature = "serde")]
-impl<'s, B: crate::backend::StorageBackend> serde::Serialize for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> serde::Serialize for KStringCowBase<'s, B> {
     #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -365,7 +363,7 @@ impl<'s, B: crate::backend::StorageBackend> serde::Serialize for KStringCowBase<
 }
 
 #[cfg(feature = "serde")]
-impl<'de, 's, B: crate::backend::StorageBackend> serde::Deserialize<'de> for KStringCowBase<'s, B> {
+impl<'de, 's, B: crate::backend::HeapStr> serde::Deserialize<'de> for KStringCowBase<'s, B> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
