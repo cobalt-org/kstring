@@ -91,7 +91,7 @@ jobs:
     - name: All features
       run: cargo test --target ${{ matrix.target }} --workspace --all-features
     - name: No-default features
-      run: cargo test --target ${{ matrix.target }} --workspace --no-default-features
+      run: cargo test --target ${{ matrix.target }} --workspace --no-default-features --features std
   miri:
     name: Miri
     runs-on: ubuntu-latest
@@ -113,7 +113,7 @@ jobs:
     - name: All features
       run: cargo miri test --all-features
     - name: No-default features
-      run: cargo miri test --no-default-features
+      run: cargo miri test --no-default-features --features std
   msrv:
     name: "Check MSRV: 1.59.0"
     runs-on: ubuntu-latest
@@ -132,7 +132,7 @@ jobs:
     - name: All features
       run: cargo check --workspace --all-targets --all-features
     - name: No-default features
-      run: cargo check --workspace --all-targets --no-default-features
+      run: cargo check --workspace --all-targets --no-default-features --features std
   docs:
     name: Docs
     runs-on: ubuntu-latest
