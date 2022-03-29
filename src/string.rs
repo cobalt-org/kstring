@@ -394,7 +394,7 @@ mod inner {
 
     impl<B: crate::backend::HeapStr> KStringInner<B> {
         #[inline]
-        pub(super) fn from_boxed(other: BoxedStr) -> Self {
+        pub(super) fn from_boxed(other: crate::backend::BoxedStr) -> Self {
             #[allow(clippy::useless_conversion)]
             Self::Owned(B::from_boxed_str(other))
         }
@@ -424,7 +424,7 @@ mod inner {
             match self {
                 Self::Singleton(s) => KStringRef::from_static(s),
                 Self::Inline(s) => KStringRef::from_ref(s.as_str()),
-                Self::Owned(s) => KStringRef::from_ref(s),
+                Self::Owned(s) => KStringRef::from_ref(s.as_str()),
             }
         }
 
@@ -433,16 +433,16 @@ mod inner {
             match self {
                 Self::Singleton(s) => s,
                 Self::Inline(s) => s.as_str(),
-                Self::Owned(s) => s,
+                Self::Owned(s) => s.as_str(),
             }
         }
 
         #[inline]
-        pub(super) fn into_boxed_str(self) -> BoxedStr {
+        pub(super) fn into_boxed_str(self) -> crate::backend::BoxedStr {
             match self {
-                Self::Singleton(s) => BoxedStr::from(s),
-                Self::Inline(s) => BoxedStr::from(s.as_str()),
-                Self::Owned(s) => BoxedStr::from(s.as_ref()),
+                Self::Singleton(s) => crate::backend::BoxedStr::from(s),
+                Self::Inline(s) => crate::backend::BoxedStr::from(s.as_str()),
+                Self::Owned(s) => crate::backend::BoxedStr::from(s.as_str()),
             }
         }
 
@@ -452,7 +452,7 @@ mod inner {
             match self {
                 Self::Singleton(s) => Cow::Borrowed(s),
                 Self::Inline(s) => Cow::Owned(s.as_str().into()),
-                Self::Owned(s) => Cow::Owned(s.as_ref().into()),
+                Self::Owned(s) => Cow::Owned(s.as_str().into()),
             }
         }
     }
@@ -465,7 +465,7 @@ mod inner {
     //
     // My only guess is that the `clone()` calls we delegate to are just that much bigger than
     // `as_str()` that, when combined with a jump table, is blowing the icache, slowing things down.
-    impl<B: crate::backend::HeapStr> Clone for KStringInner<B> {
+    impl<B: Clone> Clone for KStringInner<B> {
         fn clone(&self) -> Self {
             match self {
                 Self::Singleton(s) => Self::Singleton(s),
