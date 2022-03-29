@@ -1,5 +1,21 @@
 //! Key String: Optimized for map keys.
 //!
+//! # Examples
+//!
+//! String creation
+//! ```rust
+//! // Explicit
+//! let literal = kstring::KString::from_static("literal");
+//! // Implicit
+//! let literal = kstring::KString::from("literal");
+//!
+//! // Explicit
+//! let inline = kstring::KString::try_inline("stack").unwrap();
+//! let inline = kstring::KString::from_ref("stack");
+//!
+//! let formatted: kstring::KStringCow = format!("Hello {} and {}", literal, inline).into();
+//! ```
+//!
 //! # Background
 //!
 //! Considerations:
@@ -12,8 +28,8 @@
 //!
 //! Ramifications:
 //! - Inline small strings rather than going to the heap.
-//! - Preserve `&'static str` across strings (`KString`),
-//!   references (`KStringRef`), and lifetime abstractions (`KStringCow`) to avoid
+//! - Preserve `&'static str` across strings ([`KString`]),
+//!   references ([`KStringRef`]), and lifetime abstractions ([`KStringCow`]) to avoid
 //!   allocating for struct field names.
 //! - Use `Box<str>` rather than `String` to use less memory.
 //!
