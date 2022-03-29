@@ -1,7 +1,7 @@
 use std::fmt;
 
-use crate::KString;
-use crate::KStringCow;
+use crate::KStringBase;
+use crate::KStringCowBase;
 
 type StdString = std::string::String;
 type BoxedStr = Box<str>;
@@ -20,7 +20,7 @@ pub(crate) enum KStringRefInner<'s> {
 }
 
 impl<'s> KStringRef<'s> {
-    /// Create a new empty `KString`.
+    /// Create a new empty `KStringBase`.
     #[inline]
     #[must_use]
     pub const fn new() -> Self {
@@ -49,7 +49,7 @@ impl<'s> KStringRef<'s> {
     #[inline]
     #[must_use]
     #[allow(clippy::wrong_self_convention)]
-    pub fn to_owned<B: crate::backend::StorageBackend>(&self) -> KString<B> {
+    pub fn to_owned<B: crate::backend::StorageBackend>(&self) -> KStringBase<B> {
         self.inner.to_owned()
     }
 
@@ -71,10 +71,10 @@ impl<'s> KStringRef<'s> {
 impl<'s> KStringRefInner<'s> {
     #[inline]
     #[allow(clippy::wrong_self_convention)]
-    fn to_owned<B: crate::backend::StorageBackend>(&self) -> KString<B> {
+    fn to_owned<B: crate::backend::StorageBackend>(&self) -> KStringBase<B> {
         match self {
-            Self::Borrowed(s) => KString::from_ref(s),
-            Self::Singleton(s) => KString::from_static(s),
+            Self::Borrowed(s) => KStringBase::from_ref(s),
+            Self::Singleton(s) => KStringBase::from_static(s),
         }
     }
 
@@ -208,16 +208,16 @@ impl<'s> Default for KStringRef<'s> {
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<&'s KString<B>> for KStringRef<'s> {
+impl<'s, B: crate::backend::StorageBackend> From<&'s KStringBase<B>> for KStringRef<'s> {
     #[inline]
-    fn from(other: &'s KString<B>) -> Self {
+    fn from(other: &'s KStringBase<B>) -> Self {
         other.as_ref()
     }
 }
 
-impl<'s, B: crate::backend::StorageBackend> From<&'s KStringCow<'s, B>> for KStringRef<'s> {
+impl<'s, B: crate::backend::StorageBackend> From<&'s KStringCowBase<'s, B>> for KStringRef<'s> {
     #[inline]
-    fn from(other: &'s KStringCow<'s, B>) -> Self {
+    fn from(other: &'s KStringCowBase<'s, B>) -> Self {
         other.as_ref()
     }
 }
