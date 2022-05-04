@@ -2,7 +2,7 @@
 
 repository:
   description: String optimized for map keys
-  homepage: docs.rs/assert_cmd
+  homepage: docs.rs/kstring
   topics: rust string
   has_issues: true
   has_projects: false
