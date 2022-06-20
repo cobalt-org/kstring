@@ -26,20 +26,7 @@ Features
 - `max_inline`: Instead of aligning the inline-string for performance (15 bytes + length on 64-bit), use the full width (22 bytes on 64-bit)
 - `arc`: Instead of using `Box<str>`, use `Arc<str>`.  Note: allocations are fast enough that this can actually slow things down for small enough strings.
 
-Alternatives
-- [`smol_str`](https://crates.io/crates/smol_str)
-  - Size of String
-  - Always uses `Arc` instead of `Box`
-  - Always inlines 22 bytes
-  - Whitespace-only optimizations
-- [`smartstring`](https://crates.io/crates/smartstring)
-  - Size of String
-  - Allows mutability at the cost of relying on implementation details of `String`
-  - Always inlines 23 bytes
-- [`compact_str`](https://crates.io/crates/compact_str)
-  - Size of String
-  - Always uses `Arc` instead of `Box`
-  - Inlines 22-23 bytes, depending on implementation
+Alternatives, see [string-benchmarks-rs](https://github.com/epage/string-benchmarks-rs)
 
 ## License
 
