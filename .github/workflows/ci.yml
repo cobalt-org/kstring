@@ -67,7 +67,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install gcc-multilib
-    - uses: Swatinem/rust-cache@v1
+    - uses: Swatinem/rust-cache@v2
     - name: Build
       run: cargo test --target ${{ matrix.target }} --workspace --no-run --all-features
     - name: Default features
@@ -91,7 +91,7 @@ jobs:
         profile: minimal
         override: true
         components: miri
-    - uses: Swatinem/rust-cache@v1
+    - uses: Swatinem/rust-cache@v2
     - name: Default features
       run: cargo miri test
     - name: All features
@@ -110,7 +110,7 @@ jobs:
         toolchain: 1.59.0  # MSRV
         profile: minimal
         override: true
-    - uses: Swatinem/rust-cache@v1
+    - uses: Swatinem/rust-cache@v2
     - name: Default features
       run: cargo check --workspace --all-targets
     - name: All features
@@ -129,7 +129,7 @@ jobs:
         toolchain: stable
         profile: minimal
         override: true
-    - uses: Swatinem/rust-cache@v1
+    - uses: Swatinem/rust-cache@v2
     - name: Check documentation
       env:
         RUSTDOCFLAGS: -D warnings
@@ -149,7 +149,7 @@ jobs:
         profile: minimal
         override: true
         components: rustfmt
-    - uses: Swatinem/rust-cache@v1
+    - uses: Swatinem/rust-cache@v2
     - name: Check formatting
       run: cargo fmt --all -- --check
   clippy:
@@ -165,7 +165,7 @@ jobs:
         profile: minimal
         override: true
         components: clippy
-    - uses: Swatinem/rust-cache@v1
+    - uses: Swatinem/rust-cache@v2
     - uses: actions-rs/clippy-check@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
