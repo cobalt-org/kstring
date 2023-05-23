@@ -1,28 +1,37 @@
-[package]
-name = "kstring"
-version = "2.0.0"
-description = "Key String: optimized for map keys"
-authors = ["Ed Page <eopage@gmail.com>"]
+[workspace]
+resolver = "2"
+
+[workspace.package]
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/cobalt-org/kstring"
-documentation = "https://docs.rs/kstring"
-readme = "README.md"
-categories = ["data-structures", "text-processing"]
-keywords = ["serde", "serialization", "string"]
-edition = "2018"
+edition = "2021"
+rust-version = "1.65.0"  # MSRV
 include = [
   "build.rs",
   "src/**/*",
   "Cargo.toml",
+  "Cargo.lock",
   "LICENSE*",
   "README.md",
   "benches/**/*",
   "examples/**/*"
 ]
 
+[package]
+name = "kstring"
+version = "2.0.0"
+description = "Key String: optimized for map keys"
+authors = ["Ed Page <eopage@gmail.com>"]
+repository = "https://github.com/cobalt-org/kstring"
+documentation = "https://docs.rs/kstring"
+readme = "README.md"
+license.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+include.workspace = true
 
 [package.metadata.docs.rs]
 all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.release]
 pre-release-replacements = [
