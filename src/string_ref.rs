@@ -183,7 +183,7 @@ impl<'s> AsRef<[u8]> for KStringRef<'s> {
 impl<'s> AsRef<std::ffi::OsStr> for KStringRef<'s> {
     #[inline]
     fn as_ref(&self) -> &std::ffi::OsStr {
-        (&**self).as_ref()
+        (**self).as_ref()
     }
 }
 

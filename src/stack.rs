@@ -365,7 +365,7 @@ impl<const CAPACITY: usize> AsRef<[u8]> for StackString<CAPACITY> {
 impl<const CAPACITY: usize> AsRef<std::ffi::OsStr> for StackString<CAPACITY> {
     #[inline]
     fn as_ref(&self) -> &std::ffi::OsStr {
-        (&**self).as_ref()
+        (**self).as_ref()
     }
 }
 

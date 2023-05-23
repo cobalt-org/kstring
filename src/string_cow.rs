@@ -246,7 +246,7 @@ impl<'s, B: crate::backend::HeapStr> AsRef<[u8]> for KStringCowBase<'s, B> {
 impl<'s, B: crate::backend::HeapStr> AsRef<std::ffi::OsStr> for KStringCowBase<'s, B> {
     #[inline]
     fn as_ref(&self) -> &std::ffi::OsStr {
-        (&**self).as_ref()
+        (**self).as_ref()
     }
 }
 
