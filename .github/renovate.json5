@@ -7,6 +7,7 @@
   dependencyDashboard: true,
   regexManagers: [
     {
+      customType: 'regex',
       fileMatch: [
         '^rust-toolchain\\.toml$',
         'Cargo.toml$',
@@ -33,15 +34,9 @@
       matchPackageNames: [
         'rust',
       ],
-      minimumReleaseAge: "126 days",  // 3 releases * 6 weeks per release * 7 days per week
-      internalChecksFilter: "strict",
+      minimumReleaseAge: '126 days',
+      internalChecksFilter: 'strict',
     },
-    // Goals:
-    // - Keep version reqs low, ignoring compatible normal/build dependencies
-    // - Take advantage of latest dev-dependencies
-    // - Rollup safe upgrades to reduce CI runner load
-    // - Help keep number of versions down by always using latest breaking change
-    // - Have lockfile and manifest in-sync
     {
       matchManagers: [
         'cargo',
