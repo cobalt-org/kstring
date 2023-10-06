@@ -9,6 +9,7 @@ fn check_props(
     std_str: &str,
     kstr: kstring::KString,
 ) -> Result<(), proptest::test_runner::TestCaseError> {
+    #![allow(clippy::redundant_clone)]
     proptest::prop_assert_eq!(kstr.clone(), std_str);
     proptest::prop_assert_eq!(kstr.as_str(), std_str);
     proptest::prop_assert_eq!(kstr.len(), std_str.len());
