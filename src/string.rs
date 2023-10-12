@@ -156,7 +156,7 @@ impl<B: crate::backend::HeapStr> Ord for KStringBase<B> {
 impl<B: crate::backend::HeapStr> PartialOrd for KStringBase<B> {
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.as_str().partial_cmp(other.as_str())
+        Some(self.cmp(other))
     }
 }
 
