@@ -1,7 +1,7 @@
 #![allow(
     clippy::clone_on_copy,
     clippy::useless_conversion,
-    clippy::clone_double_ref
+    suspicious_double_ref_op
 )]
 
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
