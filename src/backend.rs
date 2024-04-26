@@ -1,5 +1,5 @@
 #[cfg(feature = "arc")]
-pub(crate) type DefaultStr = crate::backend::ArcStr;
+pub(crate) type DefaultStr = ArcStr;
 #[cfg(not(feature = "arc"))]
 pub(crate) type DefaultStr = crate::backend::BoxedStr;
 

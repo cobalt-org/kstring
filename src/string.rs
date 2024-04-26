@@ -4,7 +4,7 @@ use crate::stack::StackString;
 use crate::KStringCowBase;
 use crate::KStringRef;
 
-pub(crate) type StdString = std::string::String;
+pub(crate) type StdString = String;
 
 /// A UTF-8 encoded, immutable string.
 pub type KString = KStringBase<crate::backend::DefaultStr>;
@@ -499,7 +499,7 @@ mod inner {
 
 #[cfg(feature = "unsafe")]
 mod inner {
-    use super::*;
+    use super::{Cow, KStringRef, StackString, StdString};
 
     pub(super) union KStringInner<B> {
         tag: TagVariant,
@@ -511,14 +511,14 @@ mod inner {
     impl<B> KStringInner<B> {
         /// Create a reference to a `'static` data.
         #[inline]
-        pub const fn from_static(other: &'static str) -> Self {
+        pub(crate) const fn from_static(other: &'static str) -> Self {
             Self {
                 singleton: SingletonVariant::new(other),
             }
         }
 
         #[inline]
-        pub fn try_inline(other: &str) -> Option<Self> {
+        pub(crate) fn try_inline(other: &str) -> Option<Self> {
             StackString::try_new(other).map(|inline| Self {
                 inline: InlineVariant::new(inline),
             })
@@ -679,7 +679,7 @@ mod inner {
             if tag.is_owned() {
                 unsafe {
                     // SAFETY: `tag` ensures we are using the right variant
-                    std::mem::ManuallyDrop::drop(&mut self.owned)
+                    std::mem::ManuallyDrop::drop(&mut self.owned);
                 }
             }
         }
@@ -697,7 +697,7 @@ mod inner {
 
     #[allow(unused)]
     const TARGET_SIZE: usize = std::mem::size_of::<Target>();
-    type Target = crate::string::StdString;
+    type Target = StdString;
 
     #[allow(unused)]
     const MAX_CAPACITY: usize = TARGET_SIZE - LEN_SIZE - TAG_SIZE;

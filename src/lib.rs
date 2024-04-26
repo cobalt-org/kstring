@@ -38,6 +38,8 @@
 #![cfg_attr(feature = "document-features", doc = document_features::document_features!())]
 #![cfg_attr(not(feature = "unsafe"), forbid(unsafe_code))]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![warn(clippy::print_stderr)]
+#![warn(clippy::print_stdout)]
 
 #[cfg(not(feature = "std"))]
 compile_error!("`std` feature is required; reserved for future `no_std` support");

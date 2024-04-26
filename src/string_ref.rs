@@ -3,7 +3,7 @@ use std::fmt;
 use crate::KStringBase;
 use crate::KStringCowBase;
 
-type StdString = std::string::String;
+type StdString = String;
 type BoxedStr = Box<str>;
 
 /// A reference to a UTF-8 encoded, immutable string.
