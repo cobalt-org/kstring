@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Compatibility
+
+- MSRV is now 1.73
+
+### Fixes
+
+- Future-proof unsafe code from things the compiler could do
+
 ## [2.0.0] - 2022-03-29
 
 Note: while we intended to be "forever 1.0" to be safe to use in public APIs,
