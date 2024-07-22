@@ -501,6 +501,7 @@ mod inner {
 mod inner {
     use super::*;
 
+    #[repr(C)]
     pub(super) union KStringInner<B> {
         tag: TagVariant,
         singleton: SingletonVariant,
