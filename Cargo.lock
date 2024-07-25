@@ -346,7 +346,7 @@ dependencies = [
 
 [[package]]
 name = "kstring"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "criterion",
  "document-features",
