@@ -68,7 +68,7 @@ impl<'s> KStringRef<'s> {
     }
 }
 
-impl<'s> KStringRefInner<'s> {
+impl KStringRefInner<'_> {
     #[inline]
     #[allow(clippy::wrong_self_convention)]
     fn to_owned<B: crate::backend::HeapStr>(&self) -> KStringBase<B> {
@@ -92,7 +92,7 @@ impl<'s> KStringRefInner<'s> {
     }
 }
 
-impl<'s> std::ops::Deref for KStringRef<'s> {
+impl std::ops::Deref for KStringRef<'_> {
     type Target = str;
 
     #[inline]
@@ -101,7 +101,7 @@ impl<'s> std::ops::Deref for KStringRef<'s> {
     }
 }
 
-impl<'s> Eq for KStringRef<'s> {}
+impl Eq for KStringRef<'_> {}
 
 impl<'s> PartialEq<KStringRef<'s>> for KStringRef<'s> {
     #[inline]
@@ -110,7 +110,7 @@ impl<'s> PartialEq<KStringRef<'s>> for KStringRef<'s> {
     }
 }
 
-impl<'s> PartialEq<str> for KStringRef<'s> {
+impl PartialEq<str> for KStringRef<'_> {
     #[inline]
     fn eq(&self, other: &str) -> bool {
         PartialEq::eq(self.as_str(), other)
@@ -124,84 +124,84 @@ impl<'s> PartialEq<&'s str> for KStringRef<'s> {
     }
 }
 
-impl<'s> PartialEq<String> for KStringRef<'s> {
+impl PartialEq<String> for KStringRef<'_> {
     #[inline]
     fn eq(&self, other: &StdString) -> bool {
         PartialEq::eq(self.as_str(), other.as_str())
     }
 }
 
-impl<'s> Ord for KStringRef<'s> {
+impl Ord for KStringRef<'_> {
     #[inline]
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.as_str().cmp(other.as_str())
     }
 }
 
-impl<'s> PartialOrd for KStringRef<'s> {
+impl PartialOrd for KStringRef<'_> {
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<'s> std::hash::Hash for KStringRef<'s> {
+impl std::hash::Hash for KStringRef<'_> {
     #[inline]
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.as_str().hash(state);
     }
 }
 
-impl<'s> fmt::Debug for KStringRef<'s> {
+impl fmt::Debug for KStringRef<'_> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Debug::fmt(&self.inner, f)
     }
 }
 
-impl<'s> fmt::Display for KStringRef<'s> {
+impl fmt::Display for KStringRef<'_> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self.as_str(), f)
     }
 }
 
-impl<'s> AsRef<str> for KStringRef<'s> {
+impl AsRef<str> for KStringRef<'_> {
     #[inline]
     fn as_ref(&self) -> &str {
         self.as_str()
     }
 }
 
-impl<'s> AsRef<[u8]> for KStringRef<'s> {
+impl AsRef<[u8]> for KStringRef<'_> {
     #[inline]
     fn as_ref(&self) -> &[u8] {
         self.as_bytes()
     }
 }
 
-impl<'s> AsRef<std::ffi::OsStr> for KStringRef<'s> {
+impl AsRef<std::ffi::OsStr> for KStringRef<'_> {
     #[inline]
     fn as_ref(&self) -> &std::ffi::OsStr {
         (**self).as_ref()
     }
 }
 
-impl<'s> AsRef<std::path::Path> for KStringRef<'s> {
+impl AsRef<std::path::Path> for KStringRef<'_> {
     #[inline]
     fn as_ref(&self) -> &std::path::Path {
         std::path::Path::new(self)
     }
 }
 
-impl<'s> std::borrow::Borrow<str> for KStringRef<'s> {
+impl std::borrow::Borrow<str> for KStringRef<'_> {
     #[inline]
     fn borrow(&self) -> &str {
         self.as_str()
     }
 }
 
-impl<'s> Default for KStringRef<'s> {
+impl Default for KStringRef<'_> {
     #[inline]
     fn default() -> Self {
         Self::new()

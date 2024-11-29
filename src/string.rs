@@ -132,7 +132,7 @@ impl<B: crate::backend::HeapStr> PartialEq<str> for KStringBase<B> {
     }
 }
 
-impl<'s, B: crate::backend::HeapStr> PartialEq<&'s str> for KStringBase<B> {
+impl<B: crate::backend::HeapStr> PartialEq<&str> for KStringBase<B> {
     #[inline]
     fn eq(&self, other: &&str) -> bool {
         PartialEq::eq(self.as_str(), *other)

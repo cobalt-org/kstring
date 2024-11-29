@@ -278,7 +278,7 @@ impl<const CAPACITY: usize> PartialEq<str> for StackString<CAPACITY> {
     }
 }
 
-impl<'s, const CAPACITY: usize> PartialEq<&'s str> for StackString<CAPACITY> {
+impl<const CAPACITY: usize> PartialEq<&str> for StackString<CAPACITY> {
     #[inline]
     fn eq(&self, other: &&str) -> bool {
         PartialEq::eq(self.as_str(), *other)
@@ -313,7 +313,7 @@ impl<const CAPACITY: usize> PartialOrd<str> for StackString<CAPACITY> {
     }
 }
 
-impl<'s, const CAPACITY: usize> PartialOrd<&'s str> for StackString<CAPACITY> {
+impl<const CAPACITY: usize> PartialOrd<&str> for StackString<CAPACITY> {
     #[inline]
     fn partial_cmp(&self, other: &&str) -> Option<std::cmp::Ordering> {
         self.as_str().partial_cmp(other)
