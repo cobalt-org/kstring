@@ -244,7 +244,7 @@ impl<'s> From<&'s str> for KStringRef<'s> {
 }
 
 #[cfg(feature = "serde")]
-impl<'s> serde::Serialize for KStringRef<'s> {
+impl serde::Serialize for KStringRef<'_> {
     #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

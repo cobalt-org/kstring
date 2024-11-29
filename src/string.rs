@@ -319,7 +319,7 @@ impl<'de, B: crate::backend::HeapStr> serde::Deserialize<'de> for KStringBase<B>
 struct StringVisitor<B>(std::marker::PhantomData<B>);
 
 #[cfg(feature = "serde")]
-impl<'de, B: crate::backend::HeapStr> serde::de::Visitor<'de> for StringVisitor<B> {
+impl<B: crate::backend::HeapStr> serde::de::Visitor<'_> for StringVisitor<B> {
     type Value = KStringBase<B>;
 
     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {

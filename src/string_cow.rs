@@ -352,7 +352,7 @@ impl<B: crate::backend::HeapStr> std::str::FromStr for KStringCowBase<'_, B> {
 }
 
 #[cfg(feature = "serde")]
-impl<'s, B: crate::backend::HeapStr> serde::Serialize for KStringCowBase<'s, B> {
+impl<B: crate::backend::HeapStr> serde::Serialize for KStringCowBase<'_, B> {
     #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -363,7 +363,7 @@ impl<'s, B: crate::backend::HeapStr> serde::Serialize for KStringCowBase<'s, B> 
 }
 
 #[cfg(feature = "serde")]
-impl<'de, 's, B: crate::backend::HeapStr> serde::Deserialize<'de> for KStringCowBase<'s, B> {
+impl<'de, B: crate::backend::HeapStr> serde::Deserialize<'de> for KStringCowBase<'_, B> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
