@@ -35,7 +35,7 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     #[inline]
     #[must_use]
     pub fn try_new(s: &str) -> Option<Self> {
-        let len = s.as_bytes().len();
+        let len = s.len();
         if len <= Self::CAPACITY {
             #[cfg(feature = "unsafe")]
             let stack = {
@@ -69,7 +69,7 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     #[inline]
     #[must_use]
     pub fn new(s: &str) -> Self {
-        let len = s.as_bytes().len() as u8;
+        let len = s.len() as u8;
         debug_assert!(Self::CAPACITY <= Len::MAX.into());
         let buffer = StrBuffer::new(s);
         Self { len, buffer }
@@ -96,7 +96,7 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     #[must_use]
     #[cfg(feature = "unsafe")]
     pub unsafe fn new_unchecked(s: &str) -> Self {
-        let len = s.as_bytes().len() as u8;
+        let len = s.len() as u8;
         debug_assert!(Self::CAPACITY <= Len::MAX.into());
         let buffer = StrBuffer::new_unchecked(s);
         Self { len, buffer }
@@ -395,7 +395,7 @@ impl<const CAPACITY: usize> StrBuffer<CAPACITY> {
 
     #[inline]
     pub(crate) fn new(s: &str) -> Self {
-        let len = s.as_bytes().len();
+        let len = s.len();
         debug_assert!(len <= CAPACITY);
         let mut buffer = Self::default();
         if let Some(buffer) = buffer.0.get_mut(..len) {
@@ -425,7 +425,7 @@ impl<const CAPACITY: usize> StrBuffer<CAPACITY> {
     #[inline]
     #[cfg(feature = "unsafe")]
     pub(crate) unsafe fn new_unchecked(s: &str) -> Self {
-        let len = s.as_bytes().len();
+        let len = s.len();
         debug_assert!(len <= CAPACITY);
         let mut buffer = Self::default();
         buffer
