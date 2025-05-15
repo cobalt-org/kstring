@@ -266,6 +266,27 @@ impl<'de: 's, 's> serde::Deserialize<'de> for KStringRef<'s> {
     }
 }
 
+#[cfg(feature = "diesel")]
+#[derive(diesel::expression::AsExpression)]
+#[diesel(foreign_derive)]
+#[diesel(sql_type = diesel::sql_types::Text)]
+#[allow(dead_code)]
+struct KStringRefProxy<'s>(KStringRef<'s>);
+
+#[cfg(feature = "diesel")]
+impl<DB> diesel::serialize::ToSql<diesel::sql_types::Text, DB> for KStringRef<'_>
+where
+    DB: diesel::backend::Backend,
+    str: diesel::serialize::ToSql<diesel::sql_types::Text, DB>,
+{
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut diesel::serialize::Output<'b, '_, DB>,
+    ) -> diesel::serialize::Result {
+        self.as_str().to_sql(out)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;

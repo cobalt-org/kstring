@@ -63,6 +63,9 @@ static_assertions = "1.1.0"
 ## `serde` compatibility
 serde = { version = "1.0", optional = true }
 
+## `diesel` compatibility
+diesel = { version = "2.2", optional = true }
+
 document-features = { version = "0.2", optional = true }
 
 [dev-dependencies]

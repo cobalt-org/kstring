@@ -367,6 +367,48 @@ impl<B: crate::backend::HeapStr> serde::de::Visitor<'_> for StringVisitor<B> {
     }
 }
 
+#[cfg(feature = "diesel")]
+#[derive(diesel::expression::AsExpression, diesel::deserialize::FromSqlRow)]
+#[diesel(foreign_derive)]
+#[diesel(sql_type = diesel::sql_types::Text)]
+#[allow(dead_code)]
+struct KStringBaseProxy<B>(KStringBase<B>);
+
+#[cfg(feature = "diesel")]
+impl<B, ST, DB> diesel::deserialize::FromSql<ST, DB> for KStringBase<B>
+where
+    B: crate::backend::HeapStr,
+    DB: diesel::backend::Backend,
+    *const str: diesel::deserialize::FromSql<ST, DB>,
+{
+    fn from_sql(bytes: DB::RawValue<'_>) -> diesel::deserialize::Result<Self> {
+        let str_ptr = <*const str as diesel::deserialize::FromSql<ST, DB>>::from_sql(bytes)?;
+        if !str_ptr.is_null() {
+            // SAFETY: We just checked that `str_ptr` is not null, and `from_sql()` should return
+            // a valid pointer to an `str`.
+            let string = unsafe { &*str_ptr };
+            Ok(string.into())
+        } else {
+            Ok(Default::default())
+        }
+    }
+}
+
+#[cfg(feature = "diesel")]
+impl<B, DB> diesel::serialize::ToSql<diesel::sql_types::Text, DB> for KStringBase<B>
+where
+    B: crate::backend::HeapStr,
+    DB: diesel::backend::Backend,
+    str: diesel::serialize::ToSql<diesel::sql_types::Text, DB>,
+{
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut diesel::serialize::Output<'b, '_, DB>,
+    ) -> diesel::serialize::Result {
+        self.as_str().to_sql(out)
+    }
+}
+
 use inner::KStringInner;
 
 #[cfg(not(feature = "unsafe"))]

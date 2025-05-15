@@ -372,6 +372,40 @@ impl<'de, B: crate::backend::HeapStr> serde::Deserialize<'de> for KStringCowBase
     }
 }
 
+#[cfg(feature = "diesel")]
+#[derive(diesel::expression::AsExpression, diesel::deserialize::FromSqlRow)]
+#[diesel(foreign_derive)]
+#[diesel(sql_type = diesel::sql_types::Text)]
+#[allow(dead_code)]
+struct KStringCowBaseProxy<'s, B>(KStringCowBase<'s, B>);
+
+#[cfg(feature = "diesel")]
+impl<B, ST, DB> diesel::deserialize::FromSql<ST, DB> for KStringCowBase<'_, B>
+where
+    B: crate::backend::HeapStr,
+    DB: diesel::backend::Backend,
+    *const str: diesel::deserialize::FromSql<ST, DB>,
+{
+    fn from_sql(bytes: DB::RawValue<'_>) -> diesel::deserialize::Result<Self> {
+        KStringBase::from_sql(bytes).map(From::from)
+    }
+}
+
+#[cfg(feature = "diesel")]
+impl<B, DB> diesel::serialize::ToSql<diesel::sql_types::Text, DB> for KStringCowBase<'_, B>
+where
+    B: crate::backend::HeapStr,
+    DB: diesel::backend::Backend,
+    str: diesel::serialize::ToSql<diesel::sql_types::Text, DB>,
+{
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut diesel::serialize::Output<'b, '_, DB>,
+    ) -> diesel::serialize::Result {
+        self.as_str().to_sql(out)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
