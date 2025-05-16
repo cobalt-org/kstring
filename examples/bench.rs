@@ -14,5 +14,6 @@ fn main() {
         "from_string" => |s| kstring::KString::from_string(String::from(s)),
         _ => panic!("{:?} unsupported, try `from_ref`, `from_string`", method),
     };
+    #[allow(clippy::double_ended_iterator_last)]
     (0..count).map(|_| method(&sample)).last();
 }
