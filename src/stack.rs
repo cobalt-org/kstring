@@ -401,7 +401,7 @@ impl<const CAPACITY: usize> StrBuffer<CAPACITY> {
         if let Some(buffer) = buffer.0.get_mut(..len) {
             buffer.copy_from_slice(s.as_bytes());
         } else {
-            panic!("`{}` is larger than capacity {}", s, CAPACITY);
+            panic!("`{s}` is larger than capacity {CAPACITY}");
         }
         buffer
     }
