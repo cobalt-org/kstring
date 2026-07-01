@@ -101,7 +101,7 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: "1.96.0"  # MSRV
+        toolchain: "1.96.1"  # MSRV
     - uses: Swatinem/rust-cache@v2
     - name: Default features
       run: cargo check --workspace --all-targets
@@ -163,7 +163,7 @@ jobs:
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: "1.96.0"  # MSRV
+        toolchain: "1.96.1"  # MSRV
         components: clippy
     - uses: Swatinem/rust-cache@v2
     - name: Install SARIF tools
