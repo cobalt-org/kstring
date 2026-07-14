@@ -70,7 +70,7 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     #[must_use]
     pub fn new(s: &str) -> Self {
         let len = s.len() as u8;
-        debug_assert!(Self::CAPACITY <= Len::MAX.into());
+        assert!(Self::CAPACITY <= Len::MAX.into());
         let buffer = StrBuffer::new(s);
         Self { len, buffer }
     }
@@ -97,7 +97,7 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     #[cfg(feature = "unsafe")]
     pub unsafe fn new_unchecked(s: &str) -> Self {
         let len = s.len() as u8;
-        debug_assert!(Self::CAPACITY <= Len::MAX.into());
+        assert!(Self::CAPACITY <= Len::MAX.into());
         let buffer = StrBuffer::new_unchecked(s);
         Self { len, buffer }
     }
