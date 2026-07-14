@@ -12,8 +12,11 @@ pub struct StackString<const CAPACITY: usize> {
 impl<const CAPACITY: usize> StackString<CAPACITY> {
     pub const CAPACITY: usize = CAPACITY;
     pub const EMPTY: Self = Self::empty();
+    const ASSERT_CAPACITY_FITS_IN_LEN: () =
+        assert!(CAPACITY <= Len::MAX as usize, "CAPACITY must be <= 255");
 
     const fn empty() -> Self {
+        let () = Self::ASSERT_CAPACITY_FITS_IN_LEN;
         Self {
             len: 0,
             buffer: StrBuffer::empty(),
@@ -35,6 +38,7 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     #[inline]
     #[must_use]
     pub fn try_new(s: &str) -> Option<Self> {
+        let () = Self::ASSERT_CAPACITY_FITS_IN_LEN;
         let len = s.len();
         if len <= Self::CAPACITY {
             #[cfg(feature = "unsafe")]
@@ -69,9 +73,9 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     #[inline]
     #[must_use]
     pub fn new(s: &str) -> Self {
-        let len = s.len() as u8;
-        debug_assert!(Self::CAPACITY <= Len::MAX.into());
+        let () = Self::ASSERT_CAPACITY_FITS_IN_LEN;
         let buffer = StrBuffer::new(s);
+        let len = s.len() as u8; // guarded by `StrBuffer::new` assert
         Self { len, buffer }
     }
 
@@ -96,9 +100,9 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     #[must_use]
     #[cfg(feature = "unsafe")]
     pub unsafe fn new_unchecked(s: &str) -> Self {
-        let len = s.len() as u8;
-        debug_assert!(Self::CAPACITY <= Len::MAX.into());
+        let () = Self::ASSERT_CAPACITY_FITS_IN_LEN;
         let buffer = StrBuffer::new_unchecked(s);
+        let len = s.len() as u8; // covered by safety comment
         Self { len, buffer }
     }
 
@@ -242,7 +246,7 @@ impl<const CAPACITY: usize> StackString<CAPACITY> {
     pub fn truncate(&mut self, new_len: usize) {
         if new_len <= self.len() {
             assert!(self.is_char_boundary(new_len));
-            self.len = new_len as u8;
+            self.len = new_len as u8; // guardedd by `fn len()`
         }
     }
 }
