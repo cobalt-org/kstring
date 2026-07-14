@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+### Fixes
+
+- Switch `StackString`s debug asserts to compile time
+
 ## [2.0.2] - 2024-07-25
 
 ## [2.0.1] - 2024-07-22
