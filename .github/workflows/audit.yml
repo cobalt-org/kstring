@@ -1,13 +1,10 @@
-name: Security audit
+name: Audit
 
 permissions:
   contents: read
 
 on:
   pull_request:
-    paths:
-      - '**/Cargo.toml'
-      - '**/Cargo.lock'
   push:
     branches:
     - master
@@ -17,20 +14,43 @@ env:
   CARGO_TERM_COLOR: always
   CLICOLOR: 1
 
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
 jobs:
-  security_audit:
+  audit:
+    permissions:
+      contents: none
+    name: Audit
+    needs: [advisories, cargo_deny, actions]
+    runs-on: ubuntu-latest
+    if: "always()"
+    steps:
+      - name: Failed
+        run: exit 1
+        if: "contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')"
+  advisories:
     permissions:
       issues: write # to create issues (actions-rs/audit-check)
       checks: write # to create check (actions-rs/audit-check)
     runs-on: ubuntu-latest
     # Prevent sudden announcement of a new advisory from failing ci:
     continue-on-error: true
+    strategy:
+      matrix:
+        checks:
+          - advisories
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v7
-    - uses: actions-rs/audit-check@v1
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        persist-credentials: false
+    - name: Lint advisories
+      uses: EmbarkStudios/cargo-deny-action@bb137d7af7e4fb67e5f82a49c4fce4fad40782fe # v2.0.20
+      with:
+        command: check ${{ matrix.checks }}
+        rust-version: stable
 
   cargo_deny:
     permissions:
@@ -42,8 +62,26 @@ jobs:
         checks:
           - bans licenses sources
     steps:
-    - uses: actions/checkout@v7
-    - uses: EmbarkStudios/cargo-deny-action@v2
+    - name: Checkout repository
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      with:
+        persist-credentials: false
+    - name: Lint bans
+      uses: EmbarkStudios/cargo-deny-action@bb137d7af7e4fb67e5f82a49c4fce4fad40782fe # v2.0.20
       with:
         command: check ${{ matrix.checks }}
         rust-version: stable
+
+  actions:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read # only needed for private or internal repos
+      actions: read # only needed for private or internal repos
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      with:
+        persist-credentials: false
+    - name: Run zizmor
+      uses: zizmorcore/zizmor-action@192e21d79ab29983730a13d1382995c2307fbcaa # v0.5.7

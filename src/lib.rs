@@ -38,7 +38,9 @@
 #![cfg_attr(feature = "document-features", doc = document_features::document_features!())]
 #![cfg_attr(not(feature = "unsafe"), forbid(unsafe_code))]
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![warn(clippy::print_stderr)]
+#![warn(clippy::print_stdout)]
 #![warn(clippy::std_instead_of_core)]
 #![warn(clippy::std_instead_of_alloc)]
 
@@ -80,3 +82,7 @@ mod test {
         );
     }
 }
+
+#[doc = include_str!("../README.md")]
+#[cfg(doctest)]
+pub struct ReadmeDoctests;
