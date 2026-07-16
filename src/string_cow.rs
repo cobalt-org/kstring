@@ -1,10 +1,14 @@
-use std::{borrow::Cow, fmt};
+#[cfg(not(feature = "std"))]
+use alloc::boxed::Box;
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
+use alloc::{borrow::Cow, fmt};
 
 use crate::KStringBase;
 use crate::KStringRef;
 use crate::KStringRefInner;
 
-type StdString = std::string::String;
+type StdString = alloc::string::String;
 type BoxedStr = Box<str>;
 
 /// A reference to a UTF-8 encoded, immutable string.
@@ -155,7 +159,7 @@ impl<'s, B: crate::backend::HeapStr> KStringCowInner<'s, B> {
     }
 }
 
-impl<B: crate::backend::HeapStr> std::ops::Deref for KStringCowBase<'_, B> {
+impl<B: crate::backend::HeapStr> core::ops::Deref for KStringCowBase<'_, B> {
     type Target = str;
 
     #[inline]
@@ -196,21 +200,21 @@ impl<B: crate::backend::HeapStr> PartialEq<String> for KStringCowBase<'_, B> {
 
 impl<B: crate::backend::HeapStr> Ord for KStringCowBase<'_, B> {
     #[inline]
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
         self.as_str().cmp(other.as_str())
     }
 }
 
 impl<B: crate::backend::HeapStr> PartialOrd for KStringCowBase<'_, B> {
     #[inline]
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<B: crate::backend::HeapStr> std::hash::Hash for KStringCowBase<'_, B> {
+impl<B: crate::backend::HeapStr> core::hash::Hash for KStringCowBase<'_, B> {
     #[inline]
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         self.as_str().hash(state);
     }
 }
@@ -243,6 +247,7 @@ impl<B: crate::backend::HeapStr> AsRef<[u8]> for KStringCowBase<'_, B> {
     }
 }
 
+#[cfg(feature = "std")]
 impl<B: crate::backend::HeapStr> AsRef<std::ffi::OsStr> for KStringCowBase<'_, B> {
     #[inline]
     fn as_ref(&self) -> &std::ffi::OsStr {
@@ -250,6 +255,7 @@ impl<B: crate::backend::HeapStr> AsRef<std::ffi::OsStr> for KStringCowBase<'_, B
     }
 }
 
+#[cfg(feature = "std")]
 impl<B: crate::backend::HeapStr> AsRef<std::path::Path> for KStringCowBase<'_, B> {
     #[inline]
     fn as_ref(&self) -> &std::path::Path {
@@ -257,7 +263,7 @@ impl<B: crate::backend::HeapStr> AsRef<std::path::Path> for KStringCowBase<'_, B
     }
 }
 
-impl<B: crate::backend::HeapStr> std::borrow::Borrow<str> for KStringCowBase<'_, B> {
+impl<B: crate::backend::HeapStr> core::borrow::Borrow<str> for KStringCowBase<'_, B> {
     #[inline]
     fn borrow(&self) -> &str {
         self.as_str()
@@ -343,8 +349,8 @@ impl<'s, B: crate::backend::HeapStr> From<&'s str> for KStringCowBase<'s, B> {
     }
 }
 
-impl<B: crate::backend::HeapStr> std::str::FromStr for KStringCowBase<'_, B> {
-    type Err = std::convert::Infallible;
+impl<B: crate::backend::HeapStr> core::str::FromStr for KStringCowBase<'_, B> {
+    type Err = core::convert::Infallible;
     #[inline]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self::from_string(s.into()))
@@ -378,6 +384,9 @@ mod test {
 
     #[test]
     fn test_size() {
-        println!("KStringCow: {}", std::mem::size_of::<KStringCow<'static>>());
+        println!(
+            "KStringCow: {}",
+            core::mem::size_of::<KStringCow<'static>>()
+        );
     }
 }
