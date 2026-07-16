@@ -61,13 +61,13 @@ unstable_bench_subset = []
 static_assertions = "1.1.0"
 
 ## `serde` compatibility
-serde = { version = "1.0", optional = true }
+serde = { version = "1.0.228", optional = true }
 
-document-features = { version = "0.2", optional = true }
+document-features = { version = "0.2.12", optional = true }
 
 [dev-dependencies]
-criterion = "0.8"
-proptest = "1.4.0"
+criterion = "0.8.2"
+proptest = "1.11.0"
 
 [[bench]]
 name = "clone"
