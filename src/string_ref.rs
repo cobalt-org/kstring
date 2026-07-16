@@ -1,9 +1,15 @@
-use std::fmt;
+#[cfg(not(feature = "std"))]
+use crate::alloc::borrow::ToOwned;
+#[cfg(not(feature = "std"))]
+use alloc::boxed::Box;
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
+use core::fmt;
 
 use crate::KStringBase;
 use crate::KStringCowBase;
 
-type StdString = std::string::String;
+type StdString = alloc::string::String;
 type BoxedStr = Box<str>;
 
 /// A reference to a UTF-8 encoded, immutable string.
@@ -92,7 +98,7 @@ impl KStringRefInner<'_> {
     }
 }
 
-impl std::ops::Deref for KStringRef<'_> {
+impl core::ops::Deref for KStringRef<'_> {
     type Target = str;
 
     #[inline]
@@ -133,21 +139,21 @@ impl PartialEq<String> for KStringRef<'_> {
 
 impl Ord for KStringRef<'_> {
     #[inline]
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
         self.as_str().cmp(other.as_str())
     }
 }
 
 impl PartialOrd for KStringRef<'_> {
     #[inline]
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl std::hash::Hash for KStringRef<'_> {
+impl core::hash::Hash for KStringRef<'_> {
     #[inline]
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         self.as_str().hash(state);
     }
 }
@@ -180,6 +186,7 @@ impl AsRef<[u8]> for KStringRef<'_> {
     }
 }
 
+#[cfg(feature = "std")]
 impl AsRef<std::ffi::OsStr> for KStringRef<'_> {
     #[inline]
     fn as_ref(&self) -> &std::ffi::OsStr {
@@ -187,6 +194,7 @@ impl AsRef<std::ffi::OsStr> for KStringRef<'_> {
     }
 }
 
+#[cfg(feature = "std")]
 impl AsRef<std::path::Path> for KStringRef<'_> {
     #[inline]
     fn as_ref(&self) -> &std::path::Path {
@@ -194,7 +202,7 @@ impl AsRef<std::path::Path> for KStringRef<'_> {
     }
 }
 
-impl std::borrow::Borrow<str> for KStringRef<'_> {
+impl alloc::borrow::Borrow<str> for KStringRef<'_> {
     #[inline]
     fn borrow(&self) -> &str {
         self.as_str()
@@ -272,6 +280,9 @@ mod test {
 
     #[test]
     fn test_size() {
-        println!("KStringRef: {}", std::mem::size_of::<KStringRef<'static>>());
+        println!(
+            "KStringRef: {}",
+            core::mem::size_of::<KStringRef<'static>>()
+        );
     }
 }

@@ -1,10 +1,12 @@
-use std::{borrow::Cow, fmt};
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
+use alloc::{borrow::Cow, fmt};
 
 use crate::stack::StackString;
 use crate::KStringCowBase;
 use crate::KStringRef;
 
-pub(crate) type StdString = std::string::String;
+pub(crate) type StdString = alloc::string::String;
 
 /// A UTF-8 encoded, immutable string.
 pub type KString = KStringBase<crate::backend::DefaultStr>;
@@ -107,7 +109,7 @@ impl<B: crate::backend::HeapStr> KStringBase<B> {
     }
 }
 
-impl<B: crate::backend::HeapStr> std::ops::Deref for KStringBase<B> {
+impl<B: crate::backend::HeapStr> core::ops::Deref for KStringBase<B> {
     type Target = str;
 
     #[inline]
@@ -148,21 +150,21 @@ impl<B: crate::backend::HeapStr> PartialEq<String> for KStringBase<B> {
 
 impl<B: crate::backend::HeapStr> Ord for KStringBase<B> {
     #[inline]
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
         self.as_str().cmp(other.as_str())
     }
 }
 
 impl<B: crate::backend::HeapStr> PartialOrd for KStringBase<B> {
     #[inline]
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl<B: crate::backend::HeapStr> std::hash::Hash for KStringBase<B> {
+impl<B: crate::backend::HeapStr> core::hash::Hash for KStringBase<B> {
     #[inline]
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         self.as_str().hash(state);
     }
 }
@@ -195,6 +197,7 @@ impl<B: crate::backend::HeapStr> AsRef<[u8]> for KStringBase<B> {
     }
 }
 
+#[cfg(feature = "std")]
 impl<B: crate::backend::HeapStr> AsRef<std::ffi::OsStr> for KStringBase<B> {
     #[inline]
     fn as_ref(&self) -> &std::ffi::OsStr {
@@ -202,6 +205,7 @@ impl<B: crate::backend::HeapStr> AsRef<std::ffi::OsStr> for KStringBase<B> {
     }
 }
 
+#[cfg(feature = "std")]
 impl<B: crate::backend::HeapStr> AsRef<std::path::Path> for KStringBase<B> {
     #[inline]
     fn as_ref(&self) -> &std::path::Path {
@@ -209,7 +213,7 @@ impl<B: crate::backend::HeapStr> AsRef<std::path::Path> for KStringBase<B> {
     }
 }
 
-impl<B: crate::backend::HeapStr> std::borrow::Borrow<str> for KStringBase<B> {
+impl<B: crate::backend::HeapStr> alloc::borrow::Borrow<str> for KStringBase<B> {
     #[inline]
     fn borrow(&self) -> &str {
         self.as_str()
@@ -286,8 +290,8 @@ impl<B: crate::backend::HeapStr> From<&'static str> for KStringBase<B> {
     }
 }
 
-impl<B: crate::backend::HeapStr> std::str::FromStr for KStringBase<B> {
-    type Err = std::convert::Infallible;
+impl<B: crate::backend::HeapStr> core::str::FromStr for KStringBase<B> {
+    type Err = core::convert::Infallible;
     #[inline]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(Self::from_ref(s))
@@ -311,12 +315,12 @@ impl<'de, B: crate::backend::HeapStr> serde::Deserialize<'de> for KStringBase<B>
     where
         D: serde::Deserializer<'de>,
     {
-        deserializer.deserialize_string(StringVisitor(std::marker::PhantomData))
+        deserializer.deserialize_string(StringVisitor(core::marker::PhantomData))
     }
 }
 
 #[cfg(feature = "serde")]
-struct StringVisitor<B>(std::marker::PhantomData<B>);
+struct StringVisitor<B>(core::marker::PhantomData<B>);
 
 #[cfg(feature = "serde")]
 impl<B: crate::backend::HeapStr> serde::de::Visitor<'_> for StringVisitor<B> {
@@ -344,7 +348,7 @@ impl<B: crate::backend::HeapStr> serde::de::Visitor<'_> for StringVisitor<B> {
     where
         E: serde::de::Error,
     {
-        match std::str::from_utf8(v) {
+        match core::str::from_utf8(v) {
             Ok(s) => Ok(Self::Value::from_ref(s)),
             Err(_) => Err(serde::de::Error::invalid_value(
                 serde::de::Unexpected::Bytes(v),
@@ -476,20 +480,20 @@ mod inner {
     }
 
     #[allow(unused)]
-    const LEN_SIZE: usize = std::mem::size_of::<crate::stack::Len>();
+    const LEN_SIZE: usize = core::mem::size_of::<crate::stack::Len>();
 
     #[allow(unused)]
-    const TAG_SIZE: usize = std::mem::size_of::<u8>();
+    const TAG_SIZE: usize = core::mem::size_of::<u8>();
 
     #[allow(unused)]
     const MAX_CAPACITY: usize =
-        std::mem::size_of::<crate::string::StdString>() - TAG_SIZE - LEN_SIZE;
+        core::mem::size_of::<crate::string::StdString>() - TAG_SIZE - LEN_SIZE;
 
     // Performance seems to slow down when trying to occupy all of the padding left by `String`'s
     // discriminant.  The question is whether faster len=1-16 "allocations" outweighs going to the heap
     // for len=17-22.
     #[allow(unused)]
-    const ALIGNED_CAPACITY: usize = std::mem::size_of::<crate::backend::DefaultStr>() - LEN_SIZE;
+    const ALIGNED_CAPACITY: usize = core::mem::size_of::<crate::backend::DefaultStr>() - LEN_SIZE;
 
     #[cfg(feature = "max_inline")]
     const CAPACITY: usize = MAX_CAPACITY;
@@ -505,7 +509,7 @@ mod inner {
     pub(super) union KStringInner<B> {
         tag: TagVariant,
         singleton: SingletonVariant,
-        owned: std::mem::ManuallyDrop<OwnedVariant<B>>,
+        owned: core::mem::ManuallyDrop<OwnedVariant<B>>,
         inline: InlineVariant,
     }
 
@@ -540,7 +544,7 @@ mod inner {
             #[allow(clippy::useless_conversion)]
             let payload = B::from_boxed_str(other);
             Self {
-                owned: std::mem::ManuallyDrop::new(OwnedVariant::new(payload)),
+                owned: core::mem::ManuallyDrop::new(OwnedVariant::new(payload)),
             }
         }
 
@@ -573,7 +577,7 @@ mod inner {
                 #[allow(clippy::useless_conversion)]
                 let payload = B::from_str(other);
                 Self {
-                    owned: std::mem::ManuallyDrop::new(OwnedVariant::new(payload)),
+                    owned: core::mem::ManuallyDrop::new(OwnedVariant::new(payload)),
                 }
             }
         }
@@ -659,7 +663,7 @@ mod inner {
                 unsafe {
                     // SAFETY: `tag` ensures access to correct variant
                     Self {
-                        owned: std::mem::ManuallyDrop::new(OwnedVariant::new(
+                        owned: core::mem::ManuallyDrop::new(OwnedVariant::new(
                             self.owned.payload.clone(),
                         )),
                     }
@@ -668,7 +672,7 @@ mod inner {
                 unsafe {
                     // SAFETY: `tag` ensures access to correct variant
                     // SAFETY: non-owned types are copyable
-                    std::mem::transmute_copy(self)
+                    core::mem::transmute_copy(self)
                 }
             }
         }
@@ -680,24 +684,24 @@ mod inner {
             if tag.is_owned() {
                 unsafe {
                     // SAFETY: `tag` ensures we are using the right variant
-                    std::mem::ManuallyDrop::drop(&mut self.owned)
+                    core::mem::ManuallyDrop::drop(&mut self.owned)
                 }
             }
         }
     }
 
     #[allow(unused)]
-    const LEN_SIZE: usize = std::mem::size_of::<crate::stack::Len>();
+    const LEN_SIZE: usize = core::mem::size_of::<crate::stack::Len>();
 
     #[allow(unused)]
-    const TAG_SIZE: usize = std::mem::size_of::<Tag>();
+    const TAG_SIZE: usize = core::mem::size_of::<Tag>();
 
     #[allow(unused)]
-    const PAYLOAD_SIZE: usize = std::mem::size_of::<crate::backend::DefaultStr>();
+    const PAYLOAD_SIZE: usize = core::mem::size_of::<crate::backend::DefaultStr>();
     type Payload = Padding<PAYLOAD_SIZE>;
 
     #[allow(unused)]
-    const TARGET_SIZE: usize = std::mem::size_of::<Target>();
+    const TARGET_SIZE: usize = core::mem::size_of::<Target>();
     type Target = crate::string::StdString;
 
     #[allow(unused)]
@@ -747,9 +751,9 @@ mod inner {
         }
     }
 
-    impl std::fmt::Debug for SingletonVariant {
+    impl core::fmt::Debug for SingletonVariant {
         #[inline]
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
             self.payload.fmt(f)
         }
     }
@@ -775,9 +779,9 @@ mod inner {
         }
     }
 
-    impl<B: crate::backend::HeapStr> std::fmt::Debug for OwnedVariant<B> {
+    impl<B: crate::backend::HeapStr> core::fmt::Debug for OwnedVariant<B> {
         #[inline]
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
             self.payload.fmt(f)
         }
     }
@@ -802,9 +806,9 @@ mod inner {
         }
     }
 
-    impl std::fmt::Debug for InlineVariant {
+    impl core::fmt::Debug for InlineVariant {
         #[inline]
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
             self.payload.fmt(f)
         }
     }
@@ -836,13 +840,13 @@ mod inner {
 
     #[derive(Copy, Clone)]
     #[repr(transparent)]
-    struct Padding<const L: usize>([std::mem::MaybeUninit<u8>; L]);
+    struct Padding<const L: usize>([core::mem::MaybeUninit<u8>; L]);
 
     impl<const L: usize> Padding<L> {
         const fn new() -> Self {
             let padding = unsafe {
                 // SAFETY: Padding, never actually used
-                std::mem::MaybeUninit::uninit().assume_init()
+                core::mem::MaybeUninit::uninit().assume_init()
             };
             Self(padding)
         }
@@ -861,6 +865,6 @@ mod test {
 
     #[test]
     fn test_size() {
-        println!("KString: {}", std::mem::size_of::<KString>());
+        println!("KString: {}", core::mem::size_of::<KString>());
     }
 }

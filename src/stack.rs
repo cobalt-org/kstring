@@ -1,4 +1,6 @@
-use std::fmt;
+#[cfg(not(feature = "std"))]
+use alloc::string::String;
+use core::fmt;
 
 pub(crate) type Len = u8;
 
@@ -257,7 +259,7 @@ impl<const CAPACITY: usize> Default for StackString<CAPACITY> {
     }
 }
 
-impl<const CAPACITY: usize> std::ops::Deref for StackString<CAPACITY> {
+impl<const CAPACITY: usize> core::ops::Deref for StackString<CAPACITY> {
     type Target = str;
 
     #[inline]
@@ -298,42 +300,42 @@ impl<const CAPACITY: usize> PartialEq<String> for StackString<CAPACITY> {
 
 impl<const CAPACITY: usize> Ord for StackString<CAPACITY> {
     #[inline]
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
         self.as_str().cmp(other.as_str())
     }
 }
 
 impl<const C1: usize, const C2: usize> PartialOrd<StackString<C1>> for StackString<C2> {
     #[inline]
-    fn partial_cmp(&self, other: &StackString<C1>) -> Option<std::cmp::Ordering> {
+    fn partial_cmp(&self, other: &StackString<C1>) -> Option<core::cmp::Ordering> {
         self.as_str().partial_cmp(other.as_str())
     }
 }
 
 impl<const CAPACITY: usize> PartialOrd<str> for StackString<CAPACITY> {
     #[inline]
-    fn partial_cmp(&self, other: &str) -> Option<std::cmp::Ordering> {
+    fn partial_cmp(&self, other: &str) -> Option<core::cmp::Ordering> {
         self.as_str().partial_cmp(other)
     }
 }
 
 impl<const CAPACITY: usize> PartialOrd<&str> for StackString<CAPACITY> {
     #[inline]
-    fn partial_cmp(&self, other: &&str) -> Option<std::cmp::Ordering> {
+    fn partial_cmp(&self, other: &&str) -> Option<core::cmp::Ordering> {
         self.as_str().partial_cmp(other)
     }
 }
 
 impl<const CAPACITY: usize> PartialOrd<String> for StackString<CAPACITY> {
     #[inline]
-    fn partial_cmp(&self, other: &String) -> Option<std::cmp::Ordering> {
+    fn partial_cmp(&self, other: &String) -> Option<core::cmp::Ordering> {
         self.as_str().partial_cmp(other.as_str())
     }
 }
 
-impl<const CAPACITY: usize> std::hash::Hash for StackString<CAPACITY> {
+impl<const CAPACITY: usize> core::hash::Hash for StackString<CAPACITY> {
     #[inline]
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         self.as_str().hash(state);
     }
 }
@@ -366,6 +368,7 @@ impl<const CAPACITY: usize> AsRef<[u8]> for StackString<CAPACITY> {
     }
 }
 
+#[cfg(feature = "std")]
 impl<const CAPACITY: usize> AsRef<std::ffi::OsStr> for StackString<CAPACITY> {
     #[inline]
     fn as_ref(&self) -> &std::ffi::OsStr {
@@ -373,6 +376,7 @@ impl<const CAPACITY: usize> AsRef<std::ffi::OsStr> for StackString<CAPACITY> {
     }
 }
 
+#[cfg(feature = "std")]
 impl<const CAPACITY: usize> AsRef<std::path::Path> for StackString<CAPACITY> {
     #[inline]
     fn as_ref(&self) -> &std::path::Path {
@@ -380,7 +384,7 @@ impl<const CAPACITY: usize> AsRef<std::path::Path> for StackString<CAPACITY> {
     }
 }
 
-impl<const CAPACITY: usize> std::borrow::Borrow<str> for StackString<CAPACITY> {
+impl<const CAPACITY: usize> alloc::borrow::Borrow<str> for StackString<CAPACITY> {
     #[inline]
     fn borrow(&self) -> &str {
         self.as_str()
@@ -414,14 +418,14 @@ impl<const CAPACITY: usize> StrBuffer<CAPACITY> {
     #[cfg(not(feature = "unsafe"))]
     pub(crate) fn as_str(&self, len: usize) -> &str {
         let slice = self.0.get(..len).unwrap();
-        std::str::from_utf8(slice).unwrap()
+        core::str::from_utf8(slice).unwrap()
     }
 
     #[inline]
     #[cfg(not(feature = "unsafe"))]
     pub(crate) fn as_mut_str(&mut self, len: usize) -> &mut str {
         let slice = self.0.get_mut(..len).unwrap();
-        std::str::from_utf8_mut(slice).unwrap()
+        core::str::from_utf8_mut(slice).unwrap()
     }
 }
 
@@ -443,14 +447,14 @@ impl<const CAPACITY: usize> StrBuffer<CAPACITY> {
     #[cfg(feature = "unsafe")]
     pub(crate) unsafe fn as_str_unchecked(&self, len: usize) -> &str {
         let slice = self.0.get_unchecked(..len);
-        std::str::from_utf8_unchecked(slice)
+        core::str::from_utf8_unchecked(slice)
     }
 
     #[inline]
     #[cfg(feature = "unsafe")]
     pub(crate) unsafe fn as_mut_str_unchecked(&mut self, len: usize) -> &mut str {
         let slice = self.0.get_unchecked_mut(..len);
-        std::str::from_utf8_unchecked_mut(slice)
+        core::str::from_utf8_unchecked_mut(slice)
     }
 }
 
