@@ -1,7 +1,8 @@
 #![allow(
     clippy::clone_on_copy,
     clippy::useless_conversion,
-    suspicious_double_ref_op
+    suspicious_double_ref_op,
+    reason = "consistent code shape for benchmarks"
 )]
 
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
@@ -44,36 +45,36 @@ fn bench_access(c: &mut Criterion) {
             &len,
             |b, _| {
                 let uut = StringCow::Borrowed(*fixture);
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.is_empty())
+                let uut = std::hint::black_box(uut);
+                b.iter(|| uut.is_empty());
             },
         );
         group.bench_with_input(BenchmarkId::new("StringCow::Owned", len), &len, |b, _| {
             let uut = StringCow::Owned(String::from(*fixture));
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.is_empty())
+            let uut = std::hint::black_box(uut);
+            b.iter(|| uut.is_empty());
         });
         group.bench_with_input(
             BenchmarkId::new("KString::from_static", len),
             &len,
             |b, _| {
                 let uut = kstring::KString::from_static(fixture);
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.is_empty())
+                let uut = std::hint::black_box(uut);
+                b.iter(|| uut.is_empty());
             },
         );
         group.bench_with_input(BenchmarkId::new("KString::from_ref", len), &len, |b, _| {
             let uut = kstring::KString::from_ref(fixture);
-            let uut = criterion::black_box(uut);
-            b.iter(|| uut.is_empty())
+            let uut = std::hint::black_box(uut);
+            b.iter(|| uut.is_empty());
         });
         group.bench_with_input(
             BenchmarkId::new("KString::from_string", len),
             &len,
             |b, _| {
                 let uut = kstring::KString::from_string(String::from(*fixture));
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.is_empty())
+                let uut = std::hint::black_box(uut);
+                b.iter(|| uut.is_empty());
             },
         );
         #[cfg(not(feature = "unstable_bench_subset"))]
@@ -82,8 +83,8 @@ fn bench_access(c: &mut Criterion) {
             &len,
             |b, _| {
                 let uut = kstring::KStringCow::from_static(fixture);
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.is_empty())
+                let uut = std::hint::black_box(uut);
+                b.iter(|| uut.is_empty());
             },
         );
         #[cfg(not(feature = "unstable_bench_subset"))]
@@ -92,8 +93,8 @@ fn bench_access(c: &mut Criterion) {
             &len,
             |b, _| {
                 let uut = kstring::KStringCow::from_ref(fixture);
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.is_empty())
+                let uut = std::hint::black_box(uut);
+                b.iter(|| uut.is_empty());
             },
         );
         #[cfg(not(feature = "unstable_bench_subset"))]
@@ -102,8 +103,8 @@ fn bench_access(c: &mut Criterion) {
             &len,
             |b, _| {
                 let uut = kstring::KStringCow::from_string(String::from(*fixture));
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.is_empty())
+                let uut = std::hint::black_box(uut);
+                b.iter(|| uut.is_empty());
             },
         );
         #[cfg(not(feature = "unstable_bench_subset"))]
@@ -112,8 +113,8 @@ fn bench_access(c: &mut Criterion) {
             &len,
             |b, _| {
                 let uut = kstring::KStringRef::from_static(fixture);
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.is_empty())
+                let uut = std::hint::black_box(uut);
+                b.iter(|| uut.is_empty());
             },
         );
         #[cfg(not(feature = "unstable_bench_subset"))]
@@ -122,8 +123,8 @@ fn bench_access(c: &mut Criterion) {
             &len,
             |b, _| {
                 let uut = kstring::KStringRef::from_ref(fixture);
-                let uut = criterion::black_box(uut);
-                b.iter(|| uut.is_empty())
+                let uut = std::hint::black_box(uut);
+                b.iter(|| uut.is_empty());
             },
         );
     }

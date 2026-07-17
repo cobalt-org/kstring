@@ -8,7 +8,7 @@ use crate::KStringBase;
 use crate::KStringRef;
 use crate::KStringRefInner;
 
-type StdString = alloc::string::String;
+type StdString = String;
 type BoxedStr = Box<str>;
 
 /// A reference to a UTF-8 encoded, immutable string.
@@ -170,9 +170,9 @@ impl<B: crate::backend::HeapStr> core::ops::Deref for KStringCowBase<'_, B> {
 
 impl<B: crate::backend::HeapStr> Eq for KStringCowBase<'_, B> {}
 
-impl<'s, B: crate::backend::HeapStr> PartialEq<KStringCowBase<'s, B>> for KStringCowBase<'s, B> {
+impl<'s, B: crate::backend::HeapStr> PartialEq<Self> for KStringCowBase<'s, B> {
     #[inline]
-    fn eq(&self, other: &KStringCowBase<'s, B>) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         PartialEq::eq(self.as_str(), other.as_str())
     }
 }
@@ -384,9 +384,6 @@ mod test {
 
     #[test]
     fn test_size() {
-        println!(
-            "KStringCow: {}",
-            core::mem::size_of::<KStringCow<'static>>()
-        );
+        println!("KStringCow: {}", size_of::<KStringCow<'static>>());
     }
 }

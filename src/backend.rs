@@ -4,9 +4,9 @@ use alloc::boxed::Box;
 use alloc::string::String;
 
 #[cfg(feature = "arc")]
-pub(crate) type DefaultStr = crate::backend::ArcStr;
+pub(crate) type DefaultStr = ArcStr;
 #[cfg(not(feature = "arc"))]
-pub(crate) type DefaultStr = crate::backend::BoxedStr;
+pub(crate) type DefaultStr = BoxedStr;
 
 /// Fast allocations, O(n) clones
 pub type BoxedStr = Box<str>;

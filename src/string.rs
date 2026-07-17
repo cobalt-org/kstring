@@ -6,7 +6,7 @@ use crate::stack::StackString;
 use crate::KStringCowBase;
 use crate::KStringRef;
 
-pub(crate) type StdString = alloc::string::String;
+pub(crate) type StdString = String;
 
 /// A UTF-8 encoded, immutable string.
 pub type KString = KStringBase<crate::backend::DefaultStr>;
@@ -19,7 +19,7 @@ pub struct KStringBase<B> {
 }
 
 impl<B> KStringBase<B> {
-    pub const EMPTY: Self = KStringBase::from_static("");
+    pub const EMPTY: Self = Self::from_static("");
 
     /// Create a new empty `KStringBase`.
     #[inline]
@@ -120,7 +120,7 @@ impl<B: crate::backend::HeapStr> core::ops::Deref for KStringBase<B> {
 
 impl<B: crate::backend::HeapStr> Eq for KStringBase<B> {}
 
-impl<B: crate::backend::HeapStr> PartialEq<KStringBase<B>> for KStringBase<B> {
+impl<B: crate::backend::HeapStr> PartialEq<Self> for KStringBase<B> {
     #[inline]
     fn eq(&self, other: &Self) -> bool {
         PartialEq::eq(self.as_str(), other.as_str())
@@ -503,7 +503,7 @@ mod inner {
 
 #[cfg(feature = "unsafe")]
 mod inner {
-    use super::*;
+    use super::{Cow, KStringRef, StackString, StdString};
 
     #[repr(C)]
     pub(super) union KStringInner<B> {
@@ -516,14 +516,14 @@ mod inner {
     impl<B> KStringInner<B> {
         /// Create a reference to a `'static` data.
         #[inline]
-        pub const fn from_static(other: &'static str) -> Self {
+        pub(super) const fn from_static(other: &'static str) -> Self {
             Self {
                 singleton: SingletonVariant::new(other),
             }
         }
 
         #[inline]
-        pub fn try_inline(other: &str) -> Option<Self> {
+        pub(super) fn try_inline(other: &str) -> Option<Self> {
             StackString::try_new(other).map(|inline| Self {
                 inline: InlineVariant::new(inline),
             })
@@ -684,25 +684,25 @@ mod inner {
             if tag.is_owned() {
                 unsafe {
                     // SAFETY: `tag` ensures we are using the right variant
-                    core::mem::ManuallyDrop::drop(&mut self.owned)
+                    core::mem::ManuallyDrop::drop(&mut self.owned);
                 }
             }
         }
     }
 
     #[allow(unused)]
-    const LEN_SIZE: usize = core::mem::size_of::<crate::stack::Len>();
+    const LEN_SIZE: usize = size_of::<crate::stack::Len>();
 
     #[allow(unused)]
-    const TAG_SIZE: usize = core::mem::size_of::<Tag>();
+    const TAG_SIZE: usize = size_of::<Tag>();
 
     #[allow(unused)]
-    const PAYLOAD_SIZE: usize = core::mem::size_of::<crate::backend::DefaultStr>();
+    const PAYLOAD_SIZE: usize = size_of::<crate::backend::DefaultStr>();
     type Payload = Padding<PAYLOAD_SIZE>;
 
     #[allow(unused)]
-    const TARGET_SIZE: usize = core::mem::size_of::<Target>();
-    type Target = crate::string::StdString;
+    const TARGET_SIZE: usize = size_of::<Target>();
+    type Target = StdString;
 
     #[allow(unused)]
     const MAX_CAPACITY: usize = TARGET_SIZE - LEN_SIZE - TAG_SIZE;
@@ -818,9 +818,9 @@ mod inner {
     struct Tag(u8);
 
     impl Tag {
-        const SINGLETON: Tag = Tag(0);
-        const OWNED: Tag = Tag(u8::MAX);
-        const INLINE: Tag = Tag(1);
+        const SINGLETON: Self = Self(0);
+        const OWNED: Self = Self(u8::MAX);
+        const INLINE: Self = Self(1);
 
         #[inline]
         const fn is_singleton(self) -> bool {
@@ -865,6 +865,6 @@ mod test {
 
     #[test]
     fn test_size() {
-        println!("KString: {}", core::mem::size_of::<KString>());
+        println!("KString: {}", size_of::<KString>());
     }
 }

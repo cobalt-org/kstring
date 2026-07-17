@@ -9,7 +9,7 @@ use core::fmt;
 use crate::KStringBase;
 use crate::KStringCowBase;
 
-type StdString = alloc::string::String;
+type StdString = String;
 type BoxedStr = Box<str>;
 
 /// A reference to a UTF-8 encoded, immutable string.
@@ -109,9 +109,9 @@ impl core::ops::Deref for KStringRef<'_> {
 
 impl Eq for KStringRef<'_> {}
 
-impl<'s> PartialEq<KStringRef<'s>> for KStringRef<'s> {
+impl<'s> PartialEq<Self> for KStringRef<'s> {
     #[inline]
-    fn eq(&self, other: &KStringRef<'s>) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         PartialEq::eq(self.as_str(), other.as_str())
     }
 }
@@ -280,9 +280,6 @@ mod test {
 
     #[test]
     fn test_size() {
-        println!(
-            "KStringRef: {}",
-            core::mem::size_of::<KStringRef<'static>>()
-        );
+        println!("KStringRef: {}", size_of::<KStringRef<'static>>());
     }
 }

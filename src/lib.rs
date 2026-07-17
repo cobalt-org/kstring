@@ -38,7 +38,9 @@
 #![cfg_attr(feature = "document-features", doc = document_features::document_features!())]
 #![cfg_attr(not(feature = "unsafe"), forbid(unsafe_code))]
 #![cfg_attr(all(not(feature = "std"), not(test)), no_std)]
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![warn(clippy::print_stderr)]
+#![warn(clippy::print_stdout)]
 #![warn(clippy::std_instead_of_core)]
 #![warn(clippy::std_instead_of_alloc)]
 
@@ -61,22 +63,17 @@ pub use string_ref::*;
 mod test {
     #[test]
     fn test_size() {
-        println!(
-            "String: {}",
-            core::mem::size_of::<crate::string::StdString>()
-        );
-        println!(
-            "Box<str>: {}",
-            core::mem::size_of::<crate::backend::DefaultStr>()
-        );
+        println!("String: {}", size_of::<crate::string::StdString>());
+        println!("Box<str>: {}", size_of::<crate::backend::DefaultStr>());
         println!(
             "Box<Box<str>>: {}",
-            core::mem::size_of::<Box<crate::backend::DefaultStr>>()
+            size_of::<Box<crate::backend::DefaultStr>>()
         );
-        println!("str: {}", core::mem::size_of::<&'static str>());
-        println!(
-            "Cow: {}",
-            core::mem::size_of::<alloc::borrow::Cow<'static, str>>()
-        );
+        println!("str: {}", size_of::<&'static str>());
+        println!("Cow: {}", size_of::<alloc::borrow::Cow<'static, str>>());
     }
 }
+
+#[doc = include_str!("../README.md")]
+#[cfg(doctest)]
+pub struct ReadmeDoctests;
