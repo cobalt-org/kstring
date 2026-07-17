@@ -116,7 +116,7 @@ lto = true
 
 [package]
 name = "kstring"
-version = "2.0.3"
+version = "2.0.4"
 description = "Key String: optimized for map keys"
 categories = []
 keywords = []
