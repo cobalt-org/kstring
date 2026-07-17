@@ -35,7 +35,7 @@ proptest::proptest! {
     #[test]
     #[cfg_attr(miri, ignore)]  // See https://github.com/AltSysrq/proptest/issues/253
     fn roundtrip_static(s: String) {
-        let uut = kstring::KString::from_static(std::boxed::Box::leak(s.clone().into_boxed_str()));
+        let uut = kstring::KString::from_static(Box::leak(s.clone().into_boxed_str()));
         check_props(s.as_str(), uut)?;
     }
 }

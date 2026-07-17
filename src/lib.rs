@@ -63,23 +63,14 @@ pub use string_ref::*;
 mod test {
     #[test]
     fn test_size() {
-        println!(
-            "String: {}",
-            core::mem::size_of::<crate::string::StdString>()
-        );
-        println!(
-            "Box<str>: {}",
-            core::mem::size_of::<crate::backend::DefaultStr>()
-        );
+        println!("String: {}", size_of::<crate::string::StdString>());
+        println!("Box<str>: {}", size_of::<crate::backend::DefaultStr>());
         println!(
             "Box<Box<str>>: {}",
-            core::mem::size_of::<Box<crate::backend::DefaultStr>>()
+            size_of::<Box<crate::backend::DefaultStr>>()
         );
-        println!("str: {}", core::mem::size_of::<&'static str>());
-        println!(
-            "Cow: {}",
-            core::mem::size_of::<alloc::borrow::Cow<'static, str>>()
-        );
+        println!("str: {}", size_of::<&'static str>());
+        println!("Cow: {}", size_of::<alloc::borrow::Cow<'static, str>>());
     }
 }
 
