@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+## [2.0.5] - 2026-09-18
+
 Deprecated, for alternatives, see https://github.com/rosetta-rs/string-rosetta-rs
 
 ## [2.0.4] - 2026-07-17
@@ -106,7 +108,8 @@ benefits from some breaking changes.
 ## [1.0.0] - 2020-07-07
 
 <!-- next-url -->
-[Unreleased]: https://github.com/cobalt-org/kstring/compare/v2.0.4...HEAD
+[Unreleased]: https://github.com/cobalt-org/kstring/compare/v2.0.5...HEAD
+[2.0.5]: https://github.com/cobalt-org/kstring/compare/v2.0.4...v2.0.5
 [2.0.4]: https://github.com/cobalt-org/kstring/compare/v2.0.3...v2.0.4
 [2.0.3]: https://github.com/cobalt-org/kstring/compare/v2.0.2...v2.0.3
 [2.0.2]: https://github.com/cobalt-org/kstring/compare/v2.0.1...v2.0.2
