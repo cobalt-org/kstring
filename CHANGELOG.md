@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 <!-- next-header -->
 ## [Unreleased] - ReleaseDate
 
+Deprecated, for alternatives, see https://github.com/rosetta-rs/string-rosetta-rs
+
 ## [2.0.4] - 2026-07-17
 
 ## [2.0.3] - 2026-07-14

@@ -1,3 +1,6 @@
+# Deprecated, for alternatives, see https://github.com/rosetta-rs/string-rosetta-rs
+
+
 KString
 ===========
 
