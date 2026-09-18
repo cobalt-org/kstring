@@ -9,6 +9,10 @@ use crate::KStringRef;
 pub(crate) type StdString = String;
 
 /// A UTF-8 encoded, immutable string.
+#[deprecated(
+    since = "2.0.4",
+    note = "for alternatives, see https://github.com/rosetta-rs/string-rosetta-rs"
+)]
 pub type KString = KStringBase<crate::backend::DefaultStr>;
 
 /// A UTF-8 encoded, immutable string.
