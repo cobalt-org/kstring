@@ -4,6 +4,10 @@ pub(crate) type Len = u8;
 
 /// Fixed-size stack-allocated string
 #[derive(Copy, Clone)]
+#[deprecated(
+    since = "2.0.4",
+    note = "for alternatives, see https://github.com/rosetta-rs/string-rosetta-rs"
+)]
 pub struct StackString<const CAPACITY: usize> {
     len: Len,
     buffer: StrBuffer<CAPACITY>,

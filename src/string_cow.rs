@@ -8,6 +8,10 @@ type StdString = std::string::String;
 type BoxedStr = Box<str>;
 
 /// A reference to a UTF-8 encoded, immutable string.
+#[deprecated(
+    since = "2.0.4",
+    note = "for alternatives, see https://github.com/rosetta-rs/string-rosetta-rs"
+)]
 pub type KStringCow<'s> = KStringCowBase<'s, crate::backend::DefaultStr>;
 
 /// A reference to a UTF-8 encoded, immutable string.

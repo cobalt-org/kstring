@@ -9,6 +9,10 @@ type BoxedStr = Box<str>;
 /// A reference to a UTF-8 encoded, immutable string.
 #[derive(Copy, Clone)]
 #[repr(transparent)]
+#[deprecated(
+    since = "2.0.4",
+    note = "for alternatives, see https://github.com/rosetta-rs/string-rosetta-rs"
+)]
 pub struct KStringRef<'s> {
     pub(crate) inner: KStringRefInner<'s>,
 }
